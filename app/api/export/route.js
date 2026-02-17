@@ -19,26 +19,46 @@ function toCsv(leads) {
 }
 
 export async function GET(req) {
+  if (!process.env.DATABASE_URL) {
+    return new Response('id,createdAt,name\n', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="leads-empty.csv"`,
+      },
+    });
+  }
+
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status') || undefined;
   const segment = searchParams.get('segment') || undefined;
   const utm_campaign = searchParams.get('utm_campaign') || undefined;
 
-  const leads = await prisma.lead.findMany({
-    where: {
-      ...(status ? { status } : {}),
-      ...(segment ? { segment } : {}),
-      ...(utm_campaign ? { utm_campaign: { contains: utm_campaign, mode: 'insensitive' } } : {}),
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  try {
+    const leads = await prisma.lead.findMany({
+      where: {
+        ...(status ? { status } : {}),
+        ...(segment ? { segment } : {}),
+        ...(utm_campaign ? { utm_campaign: { contains: utm_campaign, mode: 'insensitive' } } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-  const csv = toCsv(leads);
-  return new Response(csv, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="leads-${new Date().toISOString().slice(0, 10)}.csv"`,
-    },
-  });
+    const csv = toCsv(leads);
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="leads-${new Date().toISOString().slice(0, 10)}.csv"`,
+      },
+    });
+  } catch {
+    return new Response('id,createdAt,name\n', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="leads-empty.csv"`,
+      },
+    });
+  }
 }
