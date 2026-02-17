@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  won
+  lost
+}
+
+enum LeadSegment {
+  hot
+  warm
+}
+
+model Lead {
+  id                 Int         @id @default(autoincrement())
+  createdAt          DateTime    @default(now())
+  name               String
+  phone              String
+  interest           String
+  notes              String?
+  status             LeadStatus  @default(new)
+  segment            LeadSegment @default(warm)
+  utm_source         String?
+  utm_medium         String?
+  utm_campaign       String?
+  utm_content        String?
+  utm_term           String?
+  fbclid             String?
+  gclid              String?
+  landing_page_url   String?
+  first_page_view_at DateTime?
+  form_submit_at     DateTime?
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  type      String
+  path      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
