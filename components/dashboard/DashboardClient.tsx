@@ -15,13 +15,21 @@ function makeQuery(filters) {
 export default function DashboardClient() {
   const [filters, setFilters] = useState({ status: '', segment: '', utm_campaign: '' });
   const [leads, setLeads] = useState([]);
+  const [error, setError] = useState('');
 
   const query = useMemo(() => makeQuery(filters), [filters]);
 
   async function fetchLeads() {
-    const response = await fetch(`/api/leads?${query.toString()}`, { cache: 'no-store' });
-    const data = await response.json();
-    setLeads(data.leads || []);
+    try {
+      setError('');
+      const response = await fetch(`/api/leads?${query.toString()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Failed to load leads');
+      const data = await response.json();
+      setLeads(data.leads || []);
+    } catch {
+      setLeads([]);
+      setError('Dashboard is temporarily unavailable. Please try again in a moment.');
+    }
   }
 
   useEffect(() => {
@@ -51,6 +59,12 @@ export default function DashboardClient() {
           <Link className="btn" href="/api/export?segment=warm">Export WARM CSV</Link>
           <Link className="btn-secondary" href={`/api/export?${query.toString()}`}>Export filtered CSV</Link>
         </div>
+
+        {error ? (
+          <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {error}
+          </p>
+        ) : null}
 
         <LeadTable leads={leads} />
       </section>
