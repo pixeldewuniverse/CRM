@@ -1,71 +1,74 @@
-# CRM Lead Capture MVP (Phase 1)
+# CRM Phase 1 MVP (Next.js + Prisma + PostgreSQL)
 
-Simple web-based CRM lead capture system for ad traffic.
+Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwind CSS**, and **PostgreSQL via Prisma**.
 
 ## Features
 
-- Landing page with:
-  - Hero section
-  - Short lead form
-  - Trust/social proof placeholder
-  - FAQ placeholder
-  - Footer
-- Redirects to `/thank-you` after lead submit.
-- Captures attribution data:
-  - UTM params (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`)
-  - `fbclid`, `gclid`
-  - `first_page_view_at`, `form_submit_at`
-- Lead storage in reliable JSON file with atomic writes.
-- Segmentation rules:
-  - **HOT** if interest = `Order Now` OR notes include `urgent` (case-insensitive)
-  - Otherwise **WARM**
-- Dashboard at `/dashboard`:
-  - List leads
-  - Filter by status, segment, campaign
-  - Inline edit status and segment (manual override)
-  - Export HOT / WARM / filtered CSV
-- Events:
-  - server-side logs (`data/events.log`)
-  - basic client events posted to `/api/events`
+- Landing page at `/`
+  - Captures URL attribution params: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `fbclid`, `gclid`
+  - Records `page_view` on load and stores `first_page_view_at`
+  - Lead form fields: name, phone/whatsapp, interest, notes
+  - Submits to API and redirects to `/thank-you`
+- Thank-you page at `/thank-you`
+  - Benefit download placeholder link
+- Dashboard at `/dashboard`
+  - Lead list with filters: `status`, `segment`, `utm_campaign`
+  - Inline update status + segment
+  - CSV export buttons (HOT/WARM/filtered)
+- Segmentation rules
+  - HOT if `interest === "Order Now"` OR notes contain `urgent` (case-insensitive)
+  - Else WARM
 
-## Project Structure
+## API Routes
 
-- `src/server.js` - HTTP server and business logic
-- `public/styles.css` - Styling
-- `public/main.js` - Client tracking + dashboard interactions
-- `data/leads.json` - Lead storage
-- `data/events.log` - Event logs
+- `POST /api/lead` -> create lead
+- `PATCH /api/lead/:id` -> update status/segment
+- `PATCH /api/lead` (with `id`) -> update status/segment
+- `GET /api/export?segment=hot|warm&status=&utm_campaign=` -> CSV download
+- `POST /api/page-view` -> logs page_view event
 
-## Requirements
+## Data Model
 
-- Node.js 18+
+- Prisma schema: `prisma/schema.prisma`
+- Initial migration SQL: `prisma/migrations/20260217162000_init/migration.sql`
 
-## Run locally
+## Local Development
 
-```bash
-node src/server.js
-```
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create env file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Set `DATABASE_URL` in `.env` to your PostgreSQL database.
+4. Run migration:
+   ```bash
+   npx prisma migrate deploy
+   ```
+5. Generate Prisma client (if needed):
+   ```bash
+   npx prisma generate
+   ```
+6. Start dev server:
+   ```bash
+   npm run dev
+   ```
 
-Then open:
+## Production / Vercel Deployment
 
-- Landing page: `http://localhost:3000/`
-- Dashboard: `http://localhost:3000/dashboard`
-
-## Optional environment variables
-
-Create `.env` if needed (optional):
-
-```env
-PORT=3000
-```
-
-## CSV Exports
-
-- HOT: `/export?segment=hot`
-- WARM: `/export?segment=warm`
-- Filtered: `/export?status=new&segment=hot&campaign=spring`
+1. Push this repo to GitHub.
+2. In Vercel, import the GitHub repo.
+3. Set environment variable:
+   - `DATABASE_URL` = your production PostgreSQL connection string.
+4. Set build command (optional; default works with package scripts):
+   - `npm run build`
+5. Add post-deploy migration step in your workflow/CI (or run manually):
+   - `npx prisma migrate deploy`
+6. Every PR gets a Preview Deployment in Vercel automatically when connected to GitHub.
 
 ## Notes
 
-- No external API keys required.
-- Do not commit secrets to repository.
+- No SQLite is used.
+- `npm run build` runs `prisma generate && next build`.
