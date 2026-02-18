@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 export async function POST(req) {
   if (!hasDbUrl()) {
@@ -8,8 +8,7 @@ export async function POST(req) {
 
   const body = await req.json();
   try {
-    const prisma = getPrisma();
-    await prisma.event.create({
+        await prisma.event.create({
       data: {
         type: 'page_view',
         path: body.path || '/',

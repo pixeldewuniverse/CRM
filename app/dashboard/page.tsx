@@ -1,5 +1,5 @@
 import KanbanBoard from '@/components/dashboard/KanbanBoard';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 export default async function DashboardPage() {
   if (!hasDbUrl()) {
@@ -16,8 +16,7 @@ export default async function DashboardPage() {
   }
 
   try {
-    const prisma = getPrisma();
-    const leads = await prisma.lead.findMany({
+        const leads = await prisma.lead.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

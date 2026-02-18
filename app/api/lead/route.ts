@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { computeSegment } from '@/lib/segment';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 function pickAttribution(body) {
   const source = body?.attribution || body || {};
@@ -44,8 +44,7 @@ export async function POST(req) {
   const attribution = pickAttribution(body);
 
   try {
-    const prisma = getPrisma();
-    const lead = await prisma.lead.create({
+        const lead = await prisma.lead.create({
       data: {
         name,
         phone,
@@ -93,8 +92,7 @@ export async function PATCH(req) {
   if (!body.id) return NextResponse.json({ ok: false, error: 'id is required' }, { status: 400 });
 
   try {
-    const prisma = getPrisma();
-    const updated = await prisma.lead.update({
+        const updated = await prisma.lead.update({
       where: { id: Number(body.id) },
       data: {
         ...(body.status ? { status: body.status } : {}),

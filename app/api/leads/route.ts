@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 export async function GET(req) {
   if (!hasDbUrl()) {
@@ -12,8 +12,7 @@ export async function GET(req) {
   const utm_campaign = searchParams.get('utm_campaign') || undefined;
 
   try {
-    const prisma = getPrisma();
-    const leads = await prisma.lead.findMany({
+        const leads = await prisma.lead.findMany({
       where: {
         ...(status ? { status } : {}),
         ...(segment ? { segment } : {}),

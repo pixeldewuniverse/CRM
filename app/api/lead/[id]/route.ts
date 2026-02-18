@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 export async function PATCH(req, { params }) {
   if (!hasDbUrl()) {
@@ -9,8 +9,7 @@ export async function PATCH(req, { params }) {
   const body = await req.json();
 
   try {
-    const prisma = getPrisma();
-    const updated = await prisma.lead.update({
+        const updated = await prisma.lead.update({
       where: { id: Number(params.id) },
       data: {
         ...(body.status ? { status: body.status } : {}),

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPrisma, hasDbUrl } from '@/lib/prisma';
+import { prisma, hasDbUrl } from '@/lib/prisma';
 
 export async function GET() {
   const hasUrl = hasDbUrl();
@@ -13,8 +13,7 @@ export async function GET() {
   }
 
   try {
-    const prisma = getPrisma();
-    await prisma.lead.count();
+        await prisma.lead.count();
     return NextResponse.json({
       ok: true,
       hasDbUrl: true,
