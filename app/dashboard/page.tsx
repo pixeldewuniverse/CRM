@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma';
+import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 export default async function DashboardPage({ searchParams }) {
   const status = searchParams?.status;
   const segment = searchParams?.segment;
 
-  if (!process.env.DATABASE_URL) {
+  if (!hasDbUrl()) {
     return (
       <main className="mx-auto w-[min(1100px,94%)] py-8">
         <section className="card">
@@ -18,6 +18,7 @@ export default async function DashboardPage({ searchParams }) {
   }
 
   try {
+    const prisma = getPrisma();
     const leads = await prisma.lead.findMany({
       where: {
         ...(status ? { status } : {}),

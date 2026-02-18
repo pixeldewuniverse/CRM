@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 export async function GET(req) {
-  if (!process.env.DATABASE_URL) {
+  if (!hasDbUrl()) {
     return NextResponse.json({ leads: [] });
   }
 
@@ -12,6 +12,7 @@ export async function GET(req) {
   const utm_campaign = searchParams.get('utm_campaign') || undefined;
 
   try {
+    const prisma = getPrisma();
     const leads = await prisma.lead.findMany({
       where: {
         ...(status ? { status } : {}),

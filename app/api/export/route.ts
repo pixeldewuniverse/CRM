@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 function toCsv(leads) {
   const headers = [
@@ -19,12 +19,12 @@ function toCsv(leads) {
 }
 
 export async function GET(req) {
-  if (!process.env.DATABASE_URL) {
+  if (!hasDbUrl()) {
     return new Response('id,createdAt,name\n', {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="leads-empty.csv"`,
+        'Content-Disposition': 'attachment; filename="leads-empty.csv"',
       },
     });
   }
@@ -35,6 +35,7 @@ export async function GET(req) {
   const utm_campaign = searchParams.get('utm_campaign') || undefined;
 
   try {
+    const prisma = getPrisma();
     const leads = await prisma.lead.findMany({
       where: {
         ...(status ? { status } : {}),
@@ -57,7 +58,7 @@ export async function GET(req) {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="leads-empty.csv"`,
+        'Content-Disposition': 'attachment; filename="leads-empty.csv"',
       },
     });
   }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { computeSegment } from '@/lib/segment';
+import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 function pickAttribution(body) {
   const source = body?.attribution || body || {};
@@ -16,8 +16,8 @@ function pickAttribution(body) {
 }
 
 export async function POST(req) {
-  if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 503 });
+  if (!hasDbUrl()) {
+    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 500 });
   }
 
   const body = await req.json();
@@ -32,6 +32,7 @@ export async function POST(req) {
   const attribution = pickAttribution(body);
 
   try {
+    const prisma = getPrisma();
     const lead = await prisma.lead.create({
       data: {
         name,
@@ -62,14 +63,15 @@ export async function POST(req) {
 }
 
 export async function PATCH(req) {
-  if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 503 });
+  if (!hasDbUrl()) {
+    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 500 });
   }
 
   const body = await req.json();
   if (!body.id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
   try {
+    const prisma = getPrisma();
     const updated = await prisma.lead.update({
       where: { id: Number(body.id) },
       data: {
