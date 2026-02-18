@@ -15,20 +15,32 @@ function pickAttribution(body) {
   };
 }
 
+function missingRequiredFields(body) {
+  const required = ['name', 'phone', 'interest'];
+  return required.filter((field) => !body?.[field] || !String(body[field]).trim());
+}
+
 export async function POST(req) {
   if (!hasDbUrl()) {
-    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'DATABASE_URL is not configured' }, { status: 500 });
   }
 
   const body = await req.json();
-  const name = body?.name?.trim();
-  const phone = body?.phone?.trim();
-  const interest = body?.interest?.trim();
-
-  if (!name || !phone || !interest) {
-    return NextResponse.json({ error: 'Missing required fields: name, phone, interest' }, { status: 400 });
+  const missing = missingRequiredFields(body);
+  if (missing.length > 0) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Missing required fields',
+        details: { missing },
+      },
+      { status: 400 }
+    );
   }
 
+  const name = body.name.trim();
+  const phone = body.phone.trim();
+  const interest = body.interest.trim();
   const attribution = pickAttribution(body);
 
   try {
@@ -57,8 +69,18 @@ export async function POST(req) {
     });
 
     return NextResponse.json({ ok: true, id: lead.id });
-  } catch {
-    return NextResponse.json({ error: 'Failed to create lead' }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create lead';
+    const code = typeof error === 'object' && error && 'code' in error ? error.code : undefined;
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: message,
+        ...(code ? { code: String(code) } : {}),
+      },
+      { status: 500 }
+    );
   }
 }
 

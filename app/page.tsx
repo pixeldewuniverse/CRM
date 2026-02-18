@@ -59,6 +59,12 @@ export default function LandingPage() {
       return;
     }
 
+    const missing = data?.details?.missing;
+    if (Array.isArray(missing) && missing.length) {
+      setError(`Please fill required fields: ${missing.join(', ')}.`);
+      return;
+    }
+
     setError(data.error || 'We could not submit your details. Please try again.');
   }
 
