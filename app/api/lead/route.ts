@@ -2,33 +2,45 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { computeSegment } from '@/lib/segment';
 
+function pickAttribution(body) {
+  const source = body?.attribution || body || {};
+  return {
+    utm_source: source.utm_source || null,
+    utm_medium: source.utm_medium || null,
+    utm_campaign: source.utm_campaign || null,
+    utm_content: source.utm_content || null,
+    utm_term: source.utm_term || null,
+    fbclid: source.fbclid || null,
+    gclid: source.gclid || null,
+  };
+}
+
 export async function POST(req) {
   if (!process.env.DATABASE_URL) {
     return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 503 });
   }
 
   const body = await req.json();
+  const name = body?.name?.trim();
+  const phone = body?.phone?.trim();
+  const interest = body?.interest?.trim();
 
-  if (!body.name || !body.phone || !body.interest) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  if (!name || !phone || !interest) {
+    return NextResponse.json({ error: 'Missing required fields: name, phone, interest' }, { status: 400 });
   }
+
+  const attribution = pickAttribution(body);
 
   try {
     const lead = await prisma.lead.create({
       data: {
-        name: body.name,
-        phone: body.phone,
-        interest: body.interest,
-        notes: body.notes || null,
+        name,
+        phone,
+        interest,
+        notes: body.notes?.trim() || null,
         status: 'new',
-        segment: computeSegment(body.interest, body.notes),
-        utm_source: body.attribution?.utm_source || null,
-        utm_medium: body.attribution?.utm_medium || null,
-        utm_campaign: body.attribution?.utm_campaign || null,
-        utm_content: body.attribution?.utm_content || null,
-        utm_term: body.attribution?.utm_term || null,
-        fbclid: body.attribution?.fbclid || null,
-        gclid: body.attribution?.gclid || null,
+        segment: computeSegment(interest, body.notes),
+        ...attribution,
         landing_page_url: body.landing_page_url || null,
         first_page_view_at: body.first_page_view_at ? new Date(body.first_page_view_at) : null,
         form_submit_at: new Date(),
@@ -43,7 +55,7 @@ export async function POST(req) {
       },
     });
 
-    return NextResponse.json({ ok: true, leadId: lead.id });
+    return NextResponse.json({ ok: true, id: lead.id });
   } catch {
     return NextResponse.json({ error: 'Failed to create lead' }, { status: 500 });
   }

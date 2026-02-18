@@ -38,3 +38,9 @@ CREATE TABLE "Event" (
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE INDEX "Lead_phone_idx" ON "Lead"("phone");
+
+-- CreateIndex
+CREATE INDEX "Lead_utm_campaign_idx" ON "Lead"("utm_campaign");

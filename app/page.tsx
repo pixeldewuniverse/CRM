@@ -9,6 +9,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', interest: '', notes: '' });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,6 +36,7 @@ export default function LandingPage() {
   async function onSubmit(event) {
     event.preventDefault();
     setLoading(true);
+    setError('');
 
     const payload = {
       ...form,
@@ -49,8 +51,15 @@ export default function LandingPage() {
       body: JSON.stringify(payload),
     });
 
+    const data = await response.json().catch(() => ({}));
+
     setLoading(false);
-    if (response.ok) router.push('/thank-you');
+    if (response.ok) {
+      router.push('/thank-you');
+      return;
+    }
+
+    setError(data.error || 'We could not submit your details. Please try again.');
   }
 
   return (
@@ -62,6 +71,7 @@ export default function LandingPage() {
 
       <section className="card">
         <h2 className="mb-4 text-xl font-semibold">Claim your benefit</h2>
+        {error ? <p className="mb-3 rounded-md border border-rose-300 bg-rose-50 p-2 text-sm text-rose-800">{error}</p> : null}
         <form className="grid gap-3" onSubmit={onSubmit}>
           <label>
             <span className="mb-1 block font-medium">Name*</span>

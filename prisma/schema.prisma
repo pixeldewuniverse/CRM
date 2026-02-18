@@ -39,6 +39,9 @@ model Lead {
   landing_page_url   String?
   first_page_view_at DateTime?
   form_submit_at     DateTime?
+
+  @@index([phone])
+  @@index([utm_campaign])
 }
 
 model Event {

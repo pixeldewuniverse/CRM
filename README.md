@@ -12,9 +12,9 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 - Thank-you page at `/thank-you`
   - Benefit download placeholder link
 - Dashboard at `/dashboard`
-  - Lead list with filters: `status`, `segment`, `utm_campaign`
-  - Inline update status + segment
-  - CSV export buttons (HOT/WARM/filtered)
+  - Server-rendered lead table ordered by newest first
+  - Basic filters by `status` and `segment`
+  - Includes campaign and created-at columns
 - Segmentation rules
   - HOT if `interest === "Order Now"` OR notes contain `urgent` (case-insensitive)
   - Else WARM
@@ -26,6 +26,7 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 - `PATCH /api/lead` (with `id`) -> update status/segment
 - `GET /api/export?segment=hot|warm&status=&utm_campaign=` -> CSV download
 - `POST /api/page-view` -> logs page_view event
+- `GET /api/health` -> quick deployment health check
 
 ## Data Model
 
@@ -71,4 +72,4 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 ## Notes
 
 - No SQLite is used.
-- `npm run build` runs `prisma generate && next build`.
+- `npm run build` runs `next build`.
