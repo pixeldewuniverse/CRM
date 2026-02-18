@@ -12,7 +12,7 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 - Thank-you page at `/thank-you`
   - Benefit download placeholder link
 - Dashboard login placeholder at `/dashboard/login`
-- Dashboard at `/dashboard`
+- Dashboard at `/dashboard` (protected by cookie auth)
   - Modern Kanban board by status (`new`, `contacted`, `qualified`, `won`, `lost`)
   - Card move dropdown to update lead status
   - Filters by segment, name/phone search, and campaign
@@ -46,15 +46,18 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
    cp .env.example .env
    ```
 3. Set `DATABASE_URL` in `.env` to your PostgreSQL database.
-4. Run migration:
+4. Set dashboard auth env vars:
+   - `DASHBOARD_PASSWORD`
+   - `DASHBOARD_SESSION_SECRET`
+5. Run migration:
    ```bash
    npx prisma migrate deploy
    ```
-5. Generate Prisma client (if needed):
+6. Generate Prisma client (if needed):
    ```bash
    npx prisma generate
    ```
-6. Start dev server:
+7. Start dev server:
    ```bash
    npm run dev
    ```

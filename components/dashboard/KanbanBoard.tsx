@@ -81,11 +81,19 @@ export default function KanbanBoard({ initialLeads }: { initialLeads: any[] }) {
     utm_campaign: campaignFilter,
   });
 
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
+
   return (
     <main className="mx-auto w-[min(1400px,96%)] py-8">
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">CRM Kanban Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-slate-900">CRM Kanban Dashboard</h1>
+            <button type="button" className="btn-secondary" onClick={logout}>Logout</button>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <a className="btn" href="/api/export">Export All CSV</a>
             <a className="btn" href="/api/export?segment=hot">Export HOT CSV</a>
