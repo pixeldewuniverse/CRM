@@ -3,7 +3,7 @@ import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 export async function PATCH(req, { params }) {
   if (!hasDbUrl()) {
-    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'DATABASE_URL is not configured' }, { status: 500 });
   }
 
   const body = await req.json();
@@ -20,6 +20,6 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json({ ok: true, lead: updated });
   } catch {
-    return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to update lead' }, { status: 500 });
   }
 }

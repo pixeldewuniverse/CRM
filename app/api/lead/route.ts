@@ -86,11 +86,11 @@ export async function POST(req) {
 
 export async function PATCH(req) {
   if (!hasDbUrl()) {
-    return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'DATABASE_URL is not configured' }, { status: 500 });
   }
 
   const body = await req.json();
-  if (!body.id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
+  if (!body.id) return NextResponse.json({ ok: false, error: 'id is required' }, { status: 400 });
 
   try {
     const prisma = getPrisma();
@@ -104,6 +104,6 @@ export async function PATCH(req) {
 
     return NextResponse.json({ ok: true, lead: updated });
   } catch {
-    return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Failed to update lead' }, { status: 500 });
   }
 }

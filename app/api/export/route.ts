@@ -2,9 +2,21 @@ import { getPrisma, hasDbUrl } from '@/lib/prisma';
 
 function toCsv(leads) {
   const headers = [
-    'id', 'createdAt', 'name', 'phone', 'interest', 'notes', 'status', 'segment',
-    'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
-    'fbclid', 'gclid', 'landing_page_url', 'first_page_view_at', 'form_submit_at',
+    'id',
+    'createdAt',
+    'name',
+    'phone',
+    'notes',
+    'status',
+    'segment',
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_content',
+    'utm_term',
+    'fbclid',
+    'gclid',
+    'landing_page_url',
   ];
 
   const lines = [headers.join(',')];
@@ -15,23 +27,31 @@ function toCsv(leads) {
     });
     lines.push(row.join(','));
   }
+
   return lines.join('\n');
 }
 
+function exportResponse(csv, filename) {
+  return new Response(csv, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    },
+  });
+}
+
 export async function GET(req) {
+  const emptyCsv = toCsv([]);
+
   if (!hasDbUrl()) {
-    return new Response('id,createdAt,name\n', {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="leads-empty.csv"',
-      },
-    });
+    return exportResponse(emptyCsv, 'leads-empty.csv');
   }
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status') || undefined;
   const segment = searchParams.get('segment') || undefined;
+  const search = searchParams.get('search') || undefined;
   const utm_campaign = searchParams.get('utm_campaign') || undefined;
 
   try {
@@ -41,25 +61,38 @@ export async function GET(req) {
         ...(status ? { status } : {}),
         ...(segment ? { segment } : {}),
         ...(utm_campaign ? { utm_campaign: { contains: utm_campaign, mode: 'insensitive' } } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { phone: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
       },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        createdAt: true,
+        name: true,
+        phone: true,
+        notes: true,
+        status: true,
+        segment: true,
+        utm_source: true,
+        utm_medium: true,
+        utm_campaign: true,
+        utm_content: true,
+        utm_term: true,
+        fbclid: true,
+        gclid: true,
+        landing_page_url: true,
+      },
     });
 
     const csv = toCsv(leads);
-    return new Response(csv, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="leads-${new Date().toISOString().slice(0, 10)}.csv"`,
-      },
-    });
+    return exportResponse(csv, `leads-${new Date().toISOString().slice(0, 10)}.csv`);
   } catch {
-    return new Response('id,createdAt,name\n', {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="leads-empty.csv"',
-      },
-    });
+    return exportResponse(emptyCsv, 'leads-empty.csv');
   }
 }

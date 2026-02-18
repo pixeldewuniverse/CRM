@@ -11,10 +11,12 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
   - Submits to API and redirects to `/thank-you`
 - Thank-you page at `/thank-you`
   - Benefit download placeholder link
+- Dashboard login placeholder at `/dashboard/login`
 - Dashboard at `/dashboard`
-  - Server-rendered lead table ordered by newest first
-  - Basic filters by `status` and `segment`
-  - Includes campaign and created-at columns
+  - Modern Kanban board by status (`new`, `contacted`, `qualified`, `won`, `lost`)
+  - Card move dropdown to update lead status
+  - Filters by segment, name/phone search, and campaign
+  - CSV exports: all, HOT, WARM, by status, and filtered
 - Segmentation rules
   - HOT if `interest === "Order Now"` OR notes contain `urgent` (case-insensitive)
   - Else WARM

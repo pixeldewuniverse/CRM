@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const ATTR_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
 
@@ -70,6 +71,15 @@ export default function LandingPage() {
 
   return (
     <main className="mx-auto grid w-[min(1000px,92%)] gap-4 py-8">
+      <header className="flex justify-end">
+        <Link
+          href="/dashboard/login"
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          Login
+        </Link>
+      </header>
+
       <section className="card text-center">
         <h1 className="text-3xl font-bold">Get Your Free Growth Playbook</h1>
         <p className="mt-2 text-slate-600">Fill this short form and unlock an instant benefit.</p>
