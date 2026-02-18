@@ -29,6 +29,7 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 - `GET /api/export?segment=hot|warm&status=&utm_campaign=` -> CSV download
 - `POST /api/page-view` -> logs page_view event
 - `GET /api/health` -> quick deployment health check
+- `GET /api/auth/status` -> dashboard auth env readiness booleans
 
 ## Data Model
 

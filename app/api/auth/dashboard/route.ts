@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const sessionSecret = getDashboardSecret();
 
   if (!dashboardPassword || !sessionSecret) {
-    return NextResponse.json({ ok: false, error: 'Dashboard auth is not configured' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: 'Server auth env not configured' }, { status: 500 });
   }
 
   const body = await req.json().catch(() => ({}));

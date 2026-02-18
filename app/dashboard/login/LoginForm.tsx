@@ -24,7 +24,7 @@ export default function LoginForm({ nextPath }: { nextPath: string }) {
     setLoading(false);
 
     if (!response.ok) {
-      setError(payload.error === 'Invalid password' ? 'Invalid password' : 'Login failed.');
+      setError(typeof payload.error === 'string' ? payload.error : 'Login failed. Please try again.');
       return;
     }
 
