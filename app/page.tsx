@@ -6,6 +6,17 @@ import Link from 'next/link';
 
 const ATTR_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
 
+const NTT_DESTINATIONS = [
+  { title: 'Labuan Bajo & Pulau Komodo', desc: 'Gerbang wisata bahari dengan panorama pulau eksotis dan satwa ikonik.' },
+  { title: 'Pink Beach (Pantai Merah)', desc: 'Pantai unik dengan gradasi warna pasir merah muda yang memikat.' },
+  { title: 'Pulau Padar', desc: 'Spot trekking favorit dengan pemandangan teluk bertingkat yang dramatis.' },
+  { title: 'Danau Kelimutu', desc: 'Danau tiga warna legendaris dengan lanskap pegunungan yang menenangkan.' },
+  { title: 'Wae Rebo', desc: 'Desa adat di atas awan dengan arsitektur tradisional khas Flores.' },
+  { title: 'Pantai Nihiwatu (Sumba)', desc: 'Pantai premium berpasir putih untuk relaksasi dan ombak kelas dunia.' },
+  { title: 'Bukit Wairinding (Sumba)', desc: 'Bukit savana bergelombang dengan pemandangan sunrise dan sunset terbaik.' },
+  { title: 'Air Terjun Oenesu (Kupang)', desc: 'Air terjun bertingkat yang sejuk dan cocok untuk wisata keluarga.' },
+];
+
 export default function LandingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -70,8 +81,9 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="mx-auto grid w-[min(1000px,92%)] gap-4 py-8">
-      <header className="flex justify-end">
+    <main className="mx-auto grid w-[min(1100px,94%)] gap-4 py-8">
+      <header className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <p className="text-base font-semibold text-slate-900">CRM MVP</p>
         <Link
           href="/dashboard/login"
           className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
@@ -83,6 +95,27 @@ export default function LandingPage() {
       <section className="card text-center">
         <h1 className="text-3xl font-bold">Get Your Free Growth Playbook</h1>
         <p className="mt-2 text-slate-600">Fill this short form and unlock an instant benefit.</p>
+      </section>
+
+      <section className="card">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Tempat Wisata di NTT</h2>
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700">Promo</span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {NTT_DESTINATIONS.map((item) => (
+            <article key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                  Highlight
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">{item.desc}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="card">
