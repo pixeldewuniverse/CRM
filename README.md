@@ -7,7 +7,7 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
 - Landing page at `/`
   - Captures URL attribution params: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `fbclid`, `gclid`
   - Records `page_view` on load and stores `first_page_view_at`
-  - Lead form fields: name, phone/whatsapp, interest, notes
+  - Lead form fields: name, phone/whatsapp, notes (optional)
   - Submits to API and redirects to `/thank-you`
 - Thank-you page at `/thank-you`
   - Benefit download placeholder link
@@ -18,7 +18,7 @@ Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwin
   - Filters by segment, name/phone search, and campaign
   - CSV exports: all, HOT, WARM, by status, and filtered
 - Segmentation rules
-  - HOT if `interest === "Order Now"` OR notes contain `urgent` (case-insensitive)
+  - HOT if notes contain `urgent` (case-insensitive)
   - Else WARM
 
 ## API Routes

@@ -16,7 +16,7 @@ function pickAttribution(body) {
 }
 
 function missingRequiredFields(body) {
-  const required = ['name', 'phone', 'interest'];
+  const required = ['name', 'phone'];
   return required.filter((field) => !body?.[field] || !String(body[field]).trim());
 }
 
@@ -40,7 +40,7 @@ export async function POST(req) {
 
   const name = body.name.trim();
   const phone = body.phone.trim();
-  const interest = body.interest.trim();
+  const interest = 'General Inquiry';
   const attribution = pickAttribution(body);
 
   try {
@@ -51,7 +51,7 @@ export async function POST(req) {
         interest,
         notes: body.notes?.trim() || null,
         status: 'new',
-        segment: computeSegment(interest, body.notes),
+        segment: computeSegment(body.notes),
         ...attribution,
         landing_page_url: body.landing_page_url || null,
         first_page_view_at: body.first_page_view_at ? new Date(body.first_page_view_at) : null,

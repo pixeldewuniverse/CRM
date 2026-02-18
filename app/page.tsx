@@ -9,7 +9,7 @@ const ATTR_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'u
 export default function LandingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', interest: '', notes: '' });
+  const [form, setForm] = useState({ name: '', phone: '', notes: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -96,15 +96,6 @@ export default function LandingPage() {
           <label>
             <span className="mb-1 block font-medium">Phone / WhatsApp*</span>
             <input className="input" required value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
-          </label>
-          <label>
-            <span className="mb-1 block font-medium">Interest*</span>
-            <select className="input" required value={form.interest} onChange={(e) => setForm((p) => ({ ...p, interest: e.target.value }))}>
-              <option value="">Select one</option>
-              <option>Order Now</option>
-              <option>Need More Info</option>
-              <option>Book a Call</option>
-            </select>
           </label>
           <label>
             <span className="mb-1 block font-medium">Notes (optional)</span>

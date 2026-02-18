@@ -33,7 +33,6 @@ export default function LeadTable({ leads }) {
             <th className="border p-2">ID</th>
             <th className="border p-2">Name</th>
             <th className="border p-2">Phone</th>
-            <th className="border p-2">Interest</th>
             <th className="border p-2">Campaign</th>
             <th className="border p-2">Status</th>
             <th className="border p-2">Segment</th>
@@ -47,7 +46,6 @@ export default function LeadTable({ leads }) {
                 <td className="border p-2">{lead.id}</td>
                 <td className="border p-2">{lead.name}</td>
                 <td className="border p-2">{lead.phone}</td>
-                <td className="border p-2">{lead.interest}</td>
                 <td className="border p-2">{lead.utm_campaign || '-'}</td>
                 <td className="border p-2">
                   <select
