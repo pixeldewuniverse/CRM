@@ -3,18 +3,51 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const ATTR_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
 
 const NTT_DESTINATIONS = [
-  { title: 'Labuan Bajo & Pulau Komodo', desc: 'Gerbang wisata bahari dengan panorama pulau eksotis dan satwa ikonik.' },
-  { title: 'Pink Beach (Pantai Merah)', desc: 'Pantai unik dengan gradasi warna pasir merah muda yang memikat.' },
-  { title: 'Pulau Padar', desc: 'Spot trekking favorit dengan pemandangan teluk bertingkat yang dramatis.' },
-  { title: 'Danau Kelimutu', desc: 'Danau tiga warna legendaris dengan lanskap pegunungan yang menenangkan.' },
-  { title: 'Wae Rebo', desc: 'Desa adat di atas awan dengan arsitektur tradisional khas Flores.' },
-  { title: 'Pantai Nihiwatu (Sumba)', desc: 'Pantai premium berpasir putih untuk relaksasi dan ombak kelas dunia.' },
-  { title: 'Bukit Wairinding (Sumba)', desc: 'Bukit savana bergelombang dengan pemandangan sunrise dan sunset terbaik.' },
-  { title: 'Air Terjun Oenesu (Kupang)', desc: 'Air terjun bertingkat yang sejuk dan cocok untuk wisata keluarga.' },
+  {
+    title: 'Labuan Bajo & Pulau Komodo',
+    desc: 'Gerbang wisata bahari dengan panorama pulau eksotis dan satwa ikonik.',
+    image: 'https://picsum.photos/seed/labuanbajo/800/450',
+  },
+  {
+    title: 'Pink Beach (Pantai Merah)',
+    desc: 'Pantai unik dengan gradasi warna pasir merah muda yang memikat.',
+    image: 'https://picsum.photos/seed/pinkbeach/800/450',
+  },
+  {
+    title: 'Pulau Padar',
+    desc: 'Spot trekking favorit dengan pemandangan teluk bertingkat yang dramatis.',
+    image: 'https://picsum.photos/seed/padar/800/450',
+  },
+  {
+    title: 'Danau Kelimutu',
+    desc: 'Danau tiga warna legendaris dengan lanskap pegunungan yang menenangkan.',
+    image: 'https://picsum.photos/seed/kelimutu/800/450',
+  },
+  {
+    title: 'Wae Rebo',
+    desc: 'Desa adat di atas awan dengan arsitektur tradisional khas Flores.',
+    image: 'https://picsum.photos/seed/waerebo/800/450',
+  },
+  {
+    title: 'Pantai Nihiwatu (Sumba)',
+    desc: 'Pantai premium berpasir putih untuk relaksasi dan ombak kelas dunia.',
+    image: 'https://picsum.photos/seed/nihiwatu/800/450',
+  },
+  {
+    title: 'Bukit Wairinding (Sumba)',
+    desc: 'Bukit savana bergelombang dengan pemandangan sunrise dan sunset terbaik.',
+    image: 'https://picsum.photos/seed/wairinding/800/450',
+  },
+  {
+    title: 'Air Terjun Oenesu (Kupang)',
+    desc: 'Air terjun bertingkat yang sejuk dan cocok untuk wisata keluarga.',
+    image: 'https://picsum.photos/seed/oenesu/800/450',
+  },
 ];
 
 export default function LandingPage() {
@@ -97,6 +130,20 @@ export default function LandingPage() {
         <p className="mt-2 text-slate-600">Fill this short form and unlock an instant benefit.</p>
       </section>
 
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <span className="mb-3 inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">PROMO</span>
+        <h2 className="text-xl font-semibold">Khusus Untuk Iklan</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Area khusus untuk promo iklan/campaign. Konten bisa diganti sesuai campaign aktif.
+        </p>
+        <a
+          href="#"
+          className="mt-4 inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          Lihat Promo
+        </a>
+      </section>
+
       <section className="card">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Tempat Wisata di NTT</h2>
@@ -106,6 +153,9 @@ export default function LandingPage() {
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {NTT_DESTINATIONS.map((item) => (
             <article key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="relative mb-3 aspect-[16/9] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                <Image src={item.image} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+              </div>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
