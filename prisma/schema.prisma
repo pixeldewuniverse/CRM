@@ -7,47 +7,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum LeadStatus {
-  new
-  contacted
-  qualified
-  won
+enum UserRole {
+  admin
+  staff
+}
+
+enum DealStatus {
+  lead
+  prospect
+  deal
   lost
 }
 
-enum LeadSegment {
-  hot
-  warm
+enum ActivityType {
+  call
+  wa
+  meeting
 }
 
-model Lead {
-  id                 Int         @id @default(autoincrement())
-  createdAt          DateTime    @default(now())
-  name               String
-  phone              String
-  interest           String
-  notes              String?
-  status             LeadStatus  @default(new)
-  segment            LeadSegment @default(warm)
-  utm_source         String?
-  utm_medium         String?
-  utm_campaign       String?
-  utm_content        String?
-  utm_term           String?
-  fbclid             String?
-  gclid              String?
-  landing_page_url   String?
-  first_page_view_at DateTime?
-  form_submit_at     DateTime?
+enum MessageType {
+  wa
+  email
+}
+
+model User {
+  id    Int      @id @default(autoincrement())
+  name  String
+  email String   @unique
+  role  UserRole @default(staff)
+}
+
+model Customer {
+  id         Int        @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String?
+  tag        String?
+  notes      String?
+  created_at DateTime   @default(now())
+  deals      Deal[]
+  activities Activity[]
+  messages   Message[]
 
   @@index([phone])
-  @@index([utm_campaign])
+  @@index([email])
+  @@index([tag])
 }
 
-model Event {
-  id        Int      @id @default(autoincrement())
-  type      String
-  path      String?
-  metadata  Json?
-  createdAt DateTime @default(now())
+model Deal {
+  id          Int        @id @default(autoincrement())
+  customer_id Int
+  status      DealStatus @default(lead)
+  value       Decimal    @db.Decimal(12, 2)
+  created_at  DateTime   @default(now())
+  customer    Customer   @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id])
+  @@index([status])
+}
+
+model Activity {
+  id          Int          @id @default(autoincrement())
+  customer_id Int
+  type        ActivityType
+  note        String
+  due_date    DateTime?
+  customer    Customer     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id])
+  @@index([type])
+  @@index([due_date])
+}
+
+model Message {
+  id          Int         @id @default(autoincrement())
+  customer_id Int
+  content     String
+  type        MessageType
+  sent_at     DateTime?
+  customer    Customer    @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@index([customer_id])
+  @@index([type])
+  @@index([sent_at])
 }
