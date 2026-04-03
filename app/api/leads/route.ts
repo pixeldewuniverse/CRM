@@ -1,28 +1,35 @@
 import { NextResponse } from 'next/server';
-import { prisma, hasDbUrl } from '@/lib/prisma';
+import { supabaseFetch } from '@/lib/supabase/server';
 
-export async function GET(req) {
-  if (!hasDbUrl()) {
-    return NextResponse.json({ leads: [] });
+export async function POST(request: Request) {
+  const formData = await request.formData();
+  const name = String(formData.get('name') || '').trim();
+  const phone = String(formData.get('phone') || '').trim();
+
+  if (!name || !phone) {
+    return NextResponse.redirect(new URL('/?error=missing_fields', request.url));
   }
 
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get('status') || undefined;
-  const segment = searchParams.get('segment') || undefined;
-  const utm_campaign = searchParams.get('utm_campaign') || undefined;
+  const response = await supabaseFetch('/rest/v1/customers', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({
+      name,
+      phone,
+      tag: 'landing-lead',
+      notes: 'Lead captured from Kado Bajo landing page.'
+    })
+  }, '');
 
-  try {
-        const leads = await prisma.lead.findMany({
-      where: {
-        ...(status ? { status } : {}),
-        ...(segment ? { segment } : {}),
-        ...(utm_campaign ? { utm_campaign: { contains: utm_campaign, mode: 'insensitive' } } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return NextResponse.json({ leads });
-  } catch {
-    return NextResponse.json({ leads: [] });
+  if (!response.ok) {
+    return NextResponse.redirect(new URL('/?error=save_failed', request.url));
   }
+
+  return NextResponse.redirect(
+    new URL(
+      'https://wa.me/6281234567890?text=' +
+        encodeURIComponent(`Halo Kado Bajo, saya ${name} (${phone}) ingin lihat katalog souvenir.`),
+      request.url
+    )
+  );
 }
