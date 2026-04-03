@@ -31,6 +31,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
   }
 
+function getSupabaseHeaders() {
+  return {
+    apikey: serviceRoleKey || '',
+    Authorization: `Bearer ${serviceRoleKey || ''}`,
+    'Content-Type': 'application/json'
+  };
+}
+
+async function readBodySafely(response: Response) {
+  const text = await response.text();
   try {
     const existingResponse = await fetch(
       `${supabaseUrl}/rest/v1/customers?phone=eq.${encodeURIComponent(phone)}&select=id&limit=1`,
