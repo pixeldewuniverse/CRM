@@ -4,6 +4,7 @@ import { KanbanBoard } from '@/components/crm/KanbanBoard';
 export default async function DealsPage() {
   const { supabaseFetch } = await requireSession();
   const customersRes = await supabaseFetch('/rest/v1/customers?select=id,name&order=name.asc');
+<<<<<<< codex/define-data-models-for-user,-customer,-deal-5wr79d
   const dealsRes = await supabaseFetch('/rest/v1/deals?select=id,title,status,value,customer_id,customer:customers(name)&order=created_at.desc');
   const activitiesRes = await supabaseFetch('/rest/v1/activities?select=customer_id,note,created_at&order=created_at.desc');
   const customers = customersRes.ok ? await customersRes.json() : [];
@@ -21,6 +22,11 @@ export default async function DealsPage() {
     ...deal,
     last_activity: latestByCustomer.get(deal.customer_id) || 'No activity yet'
   }));
+=======
+  const dealsRes = await supabaseFetch('/rest/v1/deals?select=id,title,status,value,customer:customers(name)&order=created_at.desc');
+  const customers = customersRes.ok ? await customersRes.json() : [];
+  const deals = dealsRes.ok ? await dealsRes.json() : [];
+>>>>>>> main
 
   return (
     <section className="space-y-4">
