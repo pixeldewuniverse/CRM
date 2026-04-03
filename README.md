@@ -25,7 +25,6 @@ A fullstack CRM web application built with **Next.js App Router**, **Tailwind CS
    ```
 3. Fill in Supabase keys from your project.
    - Optional: set `NEXT_PUBLIC_WHATSAPP_NUMBER` (default `6281234567890`) for post-submit automation.
-   - Required for server lead API: `SUPABASE_SERVICE_ROLE_KEY` (server-only; never expose to browser).
 4. Run SQL from `supabase/schema.sql` in the Supabase SQL editor.
 5. Start app:
    ```bash
@@ -42,7 +41,6 @@ Make sure your Supabase `customers` table includes:
 - `name` (text)
 - `email` (text)
 - `phone` (text)
-- `source` (text, for value: `landing_page`)
 - `created_at` (timestamp with default `now()`)
 
 Example SQL if `email` is missing:
@@ -50,8 +48,6 @@ Example SQL if `email` is missing:
 ```sql
 alter table public.customers
 add column if not exists email text;
-alter table public.customers
-add column if not exists source text;
 ```
 
 ## Project structure
