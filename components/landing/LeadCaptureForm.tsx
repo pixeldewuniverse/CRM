@@ -10,6 +10,8 @@ type FormState = {
 
 const defaultForm: FormState = { name: '', email: '', phone: '' };
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// ✅ ADMIN NUMBER (FIXED)
 const ADMIN_WHATSAPP_NUMBER = '6285161280220';
 
 function formatWhatsAppPhone(phone: string) {
@@ -44,6 +46,7 @@ export function LeadCaptureForm() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
+
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -60,6 +63,7 @@ export function LeadCaptureForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
+
       const payload = await response.json();
 
       if (!response.ok) {
@@ -67,16 +71,21 @@ export function LeadCaptureForm() {
         return;
       }
 
-      setForm(defaultForm);
       setSuccess('Success! Redirecting you to WhatsApp...');
 
       const adminPhone = formatWhatsAppPhone(ADMIN_WHATSAPP_NUMBER);
-      const message = `Halo Kado Bajo, saya ${form.name} tertarik dengan produk Anda`;
-      const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
 
-      window.setTimeout(() => {
+      const message = encodeURIComponent(
+        `Halo Kado Bajo, saya ${form.name} tertarik dengan produk Anda`
+      );
+
+      const whatsappUrl = `https://wa.me/${adminPhone}?text=${message}`;
+
+      setTimeout(() => {
         window.location.href = whatsappUrl;
       }, 500);
+
+      setForm(defaultForm);
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -87,35 +96,33 @@ export function LeadCaptureForm() {
   return (
     <form onSubmit={onSubmit} className="mt-5 space-y-3">
       <input
-        name="name"
         value={form.name}
-        onChange={(event) => onChange('name', event.target.value)}
-        required
+        onChange={(e) => onChange('name', e.target.value)}
         placeholder="Your name"
-        className="w-full rounded-xl border border-slate-200 px-4 py-3"
+        className="w-full rounded-xl border px-4 py-3"
       />
+
       <input
-        name="email"
         type="email"
         value={form.email}
-        onChange={(event) => onChange('email', event.target.value)}
-        required
+        onChange={(e) => onChange('email', e.target.value)}
         placeholder="Email address"
-        className="w-full rounded-xl border border-slate-200 px-4 py-3"
+        className="w-full rounded-xl border px-4 py-3"
       />
+
       <input
-        name="phone"
         value={form.phone}
-        onChange={(event) => onChange('phone', event.target.value)}
-        required
+        onChange={(e) => onChange('phone', e.target.value)}
         placeholder="WhatsApp number"
-        className="w-full rounded-xl border border-slate-200 px-4 py-3"
+        className="w-full rounded-xl border px-4 py-3"
       />
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {success ? <p className="text-sm text-emerald-700">{success}</p> : null}
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {success && <p className="text-sm text-green-600">{success}</p>}
+
       <button
         disabled={isSubmitting}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-black py-3 text-white"
       >
         {isSubmitting ? 'Submitting...' : 'Send & Get WhatsApp Offer'}
       </button>
