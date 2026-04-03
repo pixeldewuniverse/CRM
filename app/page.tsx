@@ -1,206 +1,103 @@
-'use client';
+import { LeadCaptureForm } from '@/components/landing/LeadCaptureForm';
+import { ProductCard } from '@/components/landing/ProductCard';
+import { TestimonialCard } from '@/components/landing/TestimonialCard';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-
-const ATTR_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
-
-const NTT_DESTINATIONS = [
-  {
-    title: 'Labuan Bajo & Pulau Komodo',
-    desc: 'Gerbang wisata bahari dengan panorama pulau eksotis dan satwa ikonik.',
-    image: 'https://picsum.photos/seed/labuanbajo/800/450',
-  },
-  {
-    title: 'Pink Beach (Pantai Merah)',
-    desc: 'Pantai unik dengan gradasi warna pasir merah muda yang memikat.',
-    image: 'https://picsum.photos/seed/pinkbeach/800/450',
-  },
-  {
-    title: 'Pulau Padar',
-    desc: 'Spot trekking favorit dengan pemandangan teluk bertingkat yang dramatis.',
-    image: 'https://picsum.photos/seed/padar/800/450',
-  },
-  {
-    title: 'Danau Kelimutu',
-    desc: 'Danau tiga warna legendaris dengan lanskap pegunungan yang menenangkan.',
-    image: 'https://picsum.photos/seed/kelimutu/800/450',
-  },
-  {
-    title: 'Wae Rebo',
-    desc: 'Desa adat di atas awan dengan arsitektur tradisional khas Flores.',
-    image: 'https://picsum.photos/seed/waerebo/800/450',
-  },
-  {
-    title: 'Pantai Nihiwatu (Sumba)',
-    desc: 'Pantai premium berpasir putih untuk relaksasi dan ombak kelas dunia.',
-    image: 'https://picsum.photos/seed/nihiwatu/800/450',
-  },
-  {
-    title: 'Bukit Wairinding (Sumba)',
-    desc: 'Bukit savana bergelombang dengan pemandangan sunrise dan sunset terbaik.',
-    image: 'https://picsum.photos/seed/wairinding/800/450',
-  },
-  {
-    title: 'Air Terjun Oenesu (Kupang)',
-    desc: 'Air terjun bertingkat yang sejuk dan cocok untuk wisata keluarga.',
-    image: 'https://picsum.photos/seed/oenesu/800/450',
-  },
+const featuredProducts = [
+  { name: 'Tenun Ikat Premium', category: 'Tenun NTT', price: 'IDR 450K', image: '🧵' },
+  { name: 'Flores Arabica Beans', category: 'Flores Coffee', price: 'IDR 120K', image: '☕' },
+  { name: 'Komodo Wood Carving', category: 'Handicrafts', price: 'IDR 280K', image: '🦎' },
+  { name: 'Natural Rattan Basket', category: 'Handicrafts', price: 'IDR 210K', image: '🧺' },
+  { name: 'Tenun Clutch Bag', category: 'Tenun NTT', price: 'IDR 320K', image: '👜' },
+  { name: 'Flores Drip Pack Set', category: 'Flores Coffee', price: 'IDR 95K', image: '🌿' }
 ];
 
-export default function LandingPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', notes: '' });
-  const [error, setError] = useState('');
+const testimonials = [
+  { name: 'Rina, Jakarta', text: 'Kualitas tenunnya luar biasa. Berasa bawa pulang cerita dari Bajo.' },
+  { name: 'Kevin, Surabaya', text: 'Kopi Floresnya wangi banget. Pengiriman cepat dan packaging premium.' },
+  { name: 'Alma, Bandung', text: 'Souvenir authentic, service ramah, dan WA order sangat praktis.' }
+];
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    ATTR_KEYS.forEach((key) => {
-      const value = params.get(key);
-      if (value) localStorage.setItem(key, value);
-    });
-
-    if (!localStorage.getItem('first_page_view_at')) {
-      localStorage.setItem('first_page_view_at', new Date().toISOString());
-    }
-
-    fetch('/api/page-view', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        path: '/',
-        first_page_view_at: localStorage.getItem('first_page_view_at'),
-        attribution: Object.fromEntries(ATTR_KEYS.map((k) => [k, localStorage.getItem(k) || ''])),
-      }),
-    }).catch(() => {});
-  }, []);
-
-  async function onSubmit(event) {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const payload = {
-      ...form,
-      first_page_view_at: localStorage.getItem('first_page_view_at'),
-      landing_page_url: window.location.href,
-      attribution: Object.fromEntries(ATTR_KEYS.map((k) => [k, localStorage.getItem(k) || ''])),
-    };
-
-    const response = await fetch('/api/lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    setLoading(false);
-    if (response.ok) {
-      router.push('/thank-you');
-      return;
-    }
-
-    const missing = data?.details?.missing;
-    if (Array.isArray(missing) && missing.length) {
-      setError(`Please fill required fields: ${missing.join(', ')}.`);
-      return;
-    }
-
-    setError(data.error || 'We could not submit your details. Please try again.');
-  }
+export default function HomePage() {
+  const waLink =
+    'https://wa.me/6281234567890?text=' +
+    encodeURIComponent('Halo Kado Bajo, saya ingin order souvenir khas Labuan Bajo.');
 
   return (
-    <main className="mx-auto grid w-[min(1100px,94%)] gap-4 py-8">
-      <header className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <p className="text-base font-semibold text-slate-900">CRM MVP</p>
-        <Link
-          href="/dashboard/login"
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-        >
-          Login
-        </Link>
-      </header>
-
-      <section className="card text-center">
-        <h1 className="text-3xl font-bold">Get Your Free Growth Playbook</h1>
-        <p className="mt-2 text-slate-600">Fill this short form and unlock an instant benefit.</p>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <span className="mb-3 inline-flex rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">PROMO</span>
-        <h2 className="text-xl font-semibold">Khusus Untuk Iklan</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Area khusus untuk promo iklan/campaign. Konten bisa diganti sesuai campaign aktif.
-        </p>
-        <a
-          href="#"
-          className="mt-4 inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-        >
-          Lihat Promo
-        </a>
-      </section>
-
-      <section className="card">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Tempat Wisata di NTT</h2>
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-medium text-sky-700">Promo</span>
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-emerald-50 text-slate-900">
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background:
+            'linear-gradient(rgba(15,23,42,.55), rgba(15,23,42,.45)), radial-gradient(circle at top right, #f59e0b, #0f766e)'
+        }}
+      >
+        <div className="mx-auto max-w-6xl px-4 py-24 text-white md:py-32">
+          <p className="mb-3 inline-block rounded-full bg-white/20 px-4 py-1 text-sm">Kado Bajo • Labuan Bajo, NTT</p>
+          <h1 className="max-w-2xl text-4xl font-bold leading-tight md:text-6xl">Bring Home Memories from Labuan Bajo</h1>
+          <p className="mt-4 max-w-xl text-lg text-amber-50">
+            Authentic NTT souvenirs crafted with local culture—from Tenun, Flores coffee, to artisan handicrafts.
+          </p>
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-8 inline-flex rounded-xl bg-emerald-500 px-6 py-3 text-lg font-semibold text-white shadow-lg transition hover:bg-emerald-600"
+          >
+            Order via WhatsApp
+          </a>
         </div>
+      </section>
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {NTT_DESTINATIONS.map((item) => (
-            <article key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <div className="relative mb-3 aspect-[16/9] overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                <Image src={item.image} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
-              </div>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                  Highlight
-                </span>
-              </div>
-              <p className="text-xs text-slate-600">{item.desc}</p>
-            </article>
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-3xl font-bold">Featured Products</h2>
+        <p className="mt-2 text-slate-600">Curated gift picks from the heart of NTT.</p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.name} {...product} />
           ))}
         </div>
       </section>
 
-      <section className="card">
-        <h2 className="mb-4 text-xl font-semibold">Claim your benefit</h2>
-        {error ? <p className="mb-3 rounded-md border border-rose-300 bg-rose-50 p-2 text-sm text-rose-800">{error}</p> : null}
-        <form className="grid gap-3" onSubmit={onSubmit}>
-          <label>
-            <span className="mb-1 block font-medium">Name*</span>
-            <input className="input" required value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
-          </label>
-          <label>
-            <span className="mb-1 block font-medium">Phone / WhatsApp*</span>
-            <input className="input" required value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
-          </label>
-          <label>
-            <span className="mb-1 block font-medium">Notes (optional)</span>
-            <textarea className="input" rows={3} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
-          </label>
-          <button className="btn" disabled={loading} type="submit">
-            {loading ? 'Submitting...' : 'Get Instant Access'}
-          </button>
-        </form>
+      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-2">
+        <article className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm">
+          <h2 className="text-3xl font-bold">Our Story</h2>
+          <p className="mt-4 leading-relaxed text-slate-700">
+            Kado Bajo connects travelers with authentic products made by local artisans across Labuan Bajo and NTT.
+            We work directly with weaving communities, coffee farmers, and craft makers to preserve culture and ensure
+            every piece carries a true story from the islands.
+          </p>
+        </article>
+
+        <article className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-bold">Get Catalog & Promo</h2>
+          <p className="mt-2 text-slate-600">Leave your contact and our team will reach you on WhatsApp.</p>
+          <LeadCaptureForm />
+        </article>
       </section>
 
-      <section className="card">
-        <h2 className="text-xl font-semibold">Trust / Social Proof</h2>
-        <p className="text-slate-600">Placeholder for testimonials and logos.</p>
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h2 className="text-3xl font-bold">Loved by Travelers</h2>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {testimonials.map((review) => (
+            <TestimonialCard key={review.name} {...review} />
+          ))}
+        </div>
       </section>
 
-      <section className="card">
-        <h2 className="text-xl font-semibold">FAQ</h2>
-        <p className="text-slate-600">Placeholder for frequently asked questions.</p>
+      <section className="px-4 pb-20 pt-8">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-slate-900 p-8 text-center text-white md:p-12">
+          <h2 className="text-3xl font-bold md:text-4xl">Ready to Order Authentic NTT Souvenirs?</h2>
+          <p className="mt-3 text-slate-200">Fast response, curated recommendations, and secure shipping support.</p>
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 inline-flex rounded-xl bg-emerald-500 px-8 py-3 text-lg font-semibold transition hover:bg-emerald-600"
+          >
+            Chat on WhatsApp
+          </a>
+        </div>
       </section>
-
-      <footer className="py-2 text-center text-sm text-slate-500">© CRM MVP</footer>
     </main>
   );
 }
