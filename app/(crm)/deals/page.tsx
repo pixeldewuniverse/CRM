@@ -1,4 +1,4 @@
-import { requireSession } from '@/lib/auth';
+ import { requireSession } from '@/lib/auth';
 import { KanbanBoard } from '@/components/crm/KanbanBoard';
 
 export default async function DealsPage() {

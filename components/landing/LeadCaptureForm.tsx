@@ -59,7 +59,7 @@ export function LeadCaptureForm() {
       }
 
       setForm(defaultForm);
-      setSuccess('Success! We received your details.');
+      setSuccess('Success! Redirecting you to WhatsApp...');
 
       if (payload?.whatsappUrl) {
         window.setTimeout(() => {

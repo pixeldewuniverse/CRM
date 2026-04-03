@@ -24,6 +24,7 @@ A fullstack CRM web application built with **Next.js App Router**, **Tailwind CS
    cp .env.example .env.local
    ```
 3. Fill in Supabase keys from your project.
+   - Optional: set `NEXT_PUBLIC_WHATSAPP_NUMBER` (default `6281234567890`) for post-submit automation.
 4. Run SQL from `supabase/schema.sql` in the Supabase SQL editor.
 5. Start app:
    ```bash
