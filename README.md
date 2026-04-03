@@ -30,6 +30,25 @@ A fullstack CRM web application built with **Next.js App Router**, **Tailwind CS
    npm run dev
    ```
 
+## Lead capture setup (Kado Bajo landing page)
+
+The landing page submits `name`, `email`, and `phone` to `POST /api/leads`, which stores data in `customers`.
+
+Make sure your Supabase `customers` table includes:
+
+- `id` (uuid or serial primary key)
+- `name` (text)
+- `email` (text)
+- `phone` (text)
+- `created_at` (timestamp with default `now()`)
+
+Example SQL if `email` is missing:
+
+```sql
+alter table public.customers
+add column if not exists email text;
+```
+
 ## Project structure
 
 - `app/(auth)/login` — login UI
