@@ -11,6 +11,13 @@ type FormState = {
 const defaultForm: FormState = { name: '', email: '', phone: '' };
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function formatWhatsAppPhone(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('08')) return `62${digits.slice(1)}`;
+  if (digits.startsWith('62')) return digits;
+  return digits;
+}
+
 export function LeadCaptureForm() {
   const [form, setForm] = useState<FormState>(defaultForm);
   const [error, setError] = useState('');
@@ -35,6 +42,7 @@ export function LeadCaptureForm() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return;
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -61,11 +69,13 @@ export function LeadCaptureForm() {
       setForm(defaultForm);
       setSuccess('Success! Redirecting you to WhatsApp...');
 
-      if (payload?.whatsappUrl) {
-        window.setTimeout(() => {
-          window.location.href = payload.whatsappUrl;
-        }, 700);
-      }
+      const adminPhone = formatWhatsAppPhone(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '6281234567890');
+      const message = `Hi Kado Bajo, I am ${form.name} and I’m interested in your products`;
+      const whatsappUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
+
+      window.setTimeout(() => {
+        window.location.href = whatsappUrl;
+      }, 500);
     } catch {
       setError('Network error. Please try again.');
     } finally {
