@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LogoutButton } from '@/components/crm/LogoutButton';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -32,9 +33,9 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
-      <form action="/api/auth/logout" method="post" className="mt-6">
-        <button className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700">Logout</button>
-      </form>
+      <div className="mt-6">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }

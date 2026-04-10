@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function proxy(request: NextRequest) {
-  const token = request.cookies.get('sb-access-token')?.value;
-  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard');
+  const isLoggedIn = request.cookies.get('auth')?.value === 'true';
+  const { pathname } = request.nextUrl;
+  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/customers');
 
-  if (!token && isDashboardRoute) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = '/login';
-    loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+  if (!isLoggedIn && isProtectedRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (isLoggedIn && pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*']
+  matcher: ['/dashboard/:path*', '/customers/:path*', '/login']
 };
