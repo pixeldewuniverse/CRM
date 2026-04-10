@@ -58,7 +58,7 @@ export function LeadCaptureForm() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/leads', {
+      const response = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -86,7 +86,6 @@ export function LeadCaptureForm() {
       }, 500);
 
       setForm(defaultForm);
-
     } catch {
       setError('Network error. Please try again.');
     } finally {
