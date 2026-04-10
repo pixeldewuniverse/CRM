@@ -16,8 +16,8 @@ export default async function AdminDashboardPage() {
   const totalLeads = customers.length;
 
   // ✅ SIMPLE STATS (sementara)
-  const deals = customers.filter((c) => c.status === 'converted').length;
-  const lost = customers.filter((c) => c.status === 'lost').length;
+  const deals = customers.filter((c) => c.status === 'closed').length;
+  const lost = 0; // sementara belum ada status lost
   const revenue = deals * 50; // dummy value
 
   const pipeline = [
