@@ -5,22 +5,12 @@ import {
   Customer,
   CUSTOMER_STATUSES,
   CustomerStatus,
-  Lead,
-  LEAD_STATUSES,
-  LeadStatus,
-  LeadUpdateInput,
   UpdateCustomerInput
 } from '@/lib/customers-types';
 
 function assertCustomerStatus(status: string): asserts status is CustomerStatus {
   if (!CUSTOMER_STATUSES.includes(status as CustomerStatus)) {
     throw new Error(`Invalid customer status: ${status}`);
-  }
-}
-
-function assertLeadStatus(status: string): asserts status is LeadStatus {
-  if (!LEAD_STATUSES.includes(status as LeadStatus)) {
-    throw new Error(`Invalid lead status: ${status}`);
   }
 }
 
@@ -90,95 +80,6 @@ export async function updateCustomer(id: string, data: UpdateCustomerInput) {
   return rows[0] || null;
 }
 
-// Leads
-export async function getAllLeads(options?: { search?: string; status?: string }) {
-  const params = new URLSearchParams({
-    select: 'id,name,phone,status,value,created_at',
-    order: 'created_at.desc'
-  });
 
-  if (options?.search?.trim()) {
-    params.set('name', `ilike.*${options.search.trim()}*`);
-  }
-
-  if (options?.status?.trim()) {
-    assertLeadStatus(options.status.trim());
-    params.set('status', `eq.${options.status.trim()}`);
-  }
-
-  const response = await supabaseFetch(`/rest/v1/leads?${params.toString()}`);
-  return parseResponse<Lead[]>(response);
-}
-
-export async function getDashboardStats() {
-  const response = await supabaseFetch('/rest/v1/leads?select=status,value');
-  const leads = await parseResponse<Array<Pick<Lead, 'status' | 'value'>>>(response);
-
-  const revenue = leads.reduce((sum, lead) => sum + Number(lead.value || 0), 0);
-
-  return {
-    totalLeads: leads.length,
-    deals: leads.filter((lead) => lead.status === 'deal').length,
-    lost: leads.filter((lead) => lead.status === 'lost').length,
-    revenue,
-    pipeline: LEAD_STATUSES.map((status) => ({
-      status,
-      count: leads.filter((lead) => lead.status === status).length
-    }))
-  };
-}
-
-export async function getRecentLeads(limit = 5) {
-  const response = await supabaseFetch(`/rest/v1/leads?select=id,name,status&order=created_at.desc&limit=${limit}`);
-  return parseResponse<Array<Pick<Lead, 'id' | 'name' | 'status'>>>(response);
-}
-
-export async function updateLead(id: string, data: Partial<LeadUpdateInput>) {
-  if (!id) {
-    throw new Error('Lead id is required');
-  }
-
-  if (data.status) {
-    assertLeadStatus(data.status);
-  }
-
-  const payload: Partial<LeadUpdateInput> = {};
-  if (data.name !== undefined) payload.name = data.name.trim();
-  if (data.phone !== undefined) payload.phone = data.phone.trim();
-  if (data.email !== undefined) payload.email = data.email.trim();
-  if (data.status !== undefined) payload.status = data.status;
-  if (data.value !== undefined) payload.value = Number(data.value);
-
-  const response = await supabaseFetch(`/rest/v1/leads?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { Prefer: 'return=representation' },
-    body: JSON.stringify(payload)
-  });
-
-  const rows = await parseResponse<Lead[]>(response);
-  return rows[0] || null;
-}
-
-export async function updateLeadStatus(id: string, status: LeadStatus) {
-  assertLeadStatus(status);
-  return updateLead(id, { status });
-}
-
-export async function removeLead(id: string) {
-  if (!id) {
-    throw new Error('Lead id is required');
-  }
-
-  const response = await supabaseFetch(`/rest/v1/leads?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: { Prefer: 'return=minimal' }
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Delete failed');
-  }
-}
-
-export { CUSTOMER_STATUSES, LEAD_STATUSES };
-export type { Customer, CustomerStatus, Lead, LeadStatus, LeadUpdateInput, UpdateCustomerInput };
+export { CUSTOMER_STATUSES};
+export type { Customer, CustomerStatus, UpdateCustomerInput };
