@@ -1,5 +1,6 @@
-export const CUSTOMER_STATUSES = ['new', 'contacted', 'closed'] as const;
-export type CustomerStatus = (typeof CUSTOMER_STATUSES)[number];
+import type { CustomerStatus } from '@/types/customer';
+
+export const CUSTOMER_STATUSES = ['new', 'contacted', 'negotiation', 'deal', 'lost'] as const;
 
 export type Customer = {
   id: string;
@@ -12,6 +13,7 @@ export type Customer = {
   notes: string | null;
   created_at: string;
   updated_at: string | null;
+  value?: number | null;
 };
 
 export type UpdateCustomerInput = {
@@ -22,20 +24,10 @@ export type UpdateCustomerInput = {
   notes: string;
 };
 
-export const LEAD_STATUSES = ['new', 'contacted', 'negotiation', 'deal', 'lost'] as const;
-export type LeadStatus = (typeof LEAD_STATUSES)[number];
+export type LeadStatus = CustomerStatus;
+export const LEAD_STATUSES = CUSTOMER_STATUSES;
 
-export type Lead = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  tag: string | null;
-  source: string | null;
-  status: LeadStatus;
-  value: number;
-  created_at: string;
-};
+export type Lead = Customer;
 
 export type LeadUpdateInput = {
   name: string;
@@ -44,3 +36,5 @@ export type LeadUpdateInput = {
   status: LeadStatus;
   value: number;
 };
+
+export type { CustomerStatus };
