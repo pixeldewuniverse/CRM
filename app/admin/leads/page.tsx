@@ -1,8 +1,7 @@
-import Link from 'next/link';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
-import { getLeads, LEAD_STATUSES } from '@/lib/leads';
+import { getAllLeads, LEAD_STATUSES } from '@/lib/leads';
 import { deleteLeadAction, updateLeadStatusAction } from './actions';
 
 function currency(value: number) {
@@ -17,35 +16,29 @@ export default async function LeadsPage({
   const params = await searchParams;
   const q = params.q || '';
   const status = params.status || '';
-
-  const leads = await getLeads({ search: q, status });
+  const leads = await getAllLeads({ search: q, status });
 
   return (
     <div className="space-y-6">
-      <section>
-        <h2 className="text-2xl font-semibold text-slate-900">Leads</h2>
-        <p className="mt-1 text-sm text-slate-500">Track, update, and manage your pipeline.</p>
-      </section>
-
       <Card>
-        <form className="grid gap-3 md:grid-cols-[1fr_200px_auto]">
+        <form className="grid gap-3 md:grid-cols-[1fr_220px_auto]">
           <input
             name="q"
             defaultValue={q}
             placeholder="Search by name"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-slate-300 focus:ring"
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-slate-300 focus:ring"
           />
-          <select name="status" defaultValue={status} className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-slate-300 focus:ring">
+          <select name="status" defaultValue={status} className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-slate-300 focus:ring">
             <option value="">All statuses</option>
             {LEAD_STATUSES.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
-          <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Apply</button>
+          <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-700">Apply</button>
         </form>
       </Card>
 
       <Card className="overflow-hidden p-0">
         {leads.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">No leads found.</div>
+          <div className="p-10 text-center text-sm text-slate-500">No leads match your filters.</div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -61,10 +54,8 @@ export default async function LeadsPage({
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3">
-                      <Link href={`/admin/leads/${lead.id}`} className="font-medium text-slate-900 hover:underline">{lead.name}</Link>
-                    </td>
+                  <tr key={lead.id} className="hover:bg-slate-50/80">
+                    <td className="px-4 py-3 font-medium text-slate-900">{lead.name}</td>
                     <td className="px-4 py-3 text-slate-600">{lead.phone}</td>
                     <td className="px-4 py-3"><StatusBadge status={lead.status} /></td>
                     <td className="px-4 py-3 text-slate-600">{currency(lead.value)}</td>
@@ -84,7 +75,7 @@ export default async function LeadsPage({
                         </form>
                         <form action={deleteLeadAction}>
                           <input type="hidden" name="id" value={lead.id} />
-                          <button className="rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50">Delete</button>
+                          <button className="rounded-lg border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50">Delete</button>
                         </form>
                       </div>
                     </td>

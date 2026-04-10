@@ -1,5 +1,6 @@
-export const LEAD_STATUSES = ['new', 'contacted', 'negotiation', 'deal', 'lost'] as const;
+import { supabaseAdminRequest } from '@/lib/supabase/admin-client';
 
+export const LEAD_STATUSES = ['new', 'contacted', 'negotiation', 'deal', 'lost'] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 export type Lead = {
@@ -12,149 +13,75 @@ export type Lead = {
   status: LeadStatus;
   value: number;
   created_at: string;
-  updated_at: string;
 };
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function assertConfig() {
-  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-    throw new Error('Missing Supabase env vars: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  }
-}
-
-function supabaseHeaders(extra: HeadersInit = {}): HeadersInit {
-  return {
-    apikey: SERVICE_ROLE_KEY || '',
-    Authorization: `Bearer ${SERVICE_ROLE_KEY || ''}`,
-    'Content-Type': 'application/json',
-    ...extra
-  };
-}
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Supabase request failed');
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
-}
-
-export async function getLeadStats() {
-  assertConfig();
-
-  const [allRes, dealRes, lostRes] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/leads?select=id,value`, { cache: 'no-store', headers: supabaseHeaders() }),
-    fetch(`${SUPABASE_URL}/rest/v1/leads?status=eq.deal&select=id`, { cache: 'no-store', headers: supabaseHeaders() }),
-    fetch(`${SUPABASE_URL}/rest/v1/leads?status=eq.lost&select=id`, { cache: 'no-store', headers: supabaseHeaders() })
-  ]);
-
-  const allLeads = await handleResponse<Array<Pick<Lead, 'id' | 'value'>>>(allRes);
-  const deals = await handleResponse<Array<Pick<Lead, 'id'>>>(dealRes);
-  const lost = await handleResponse<Array<Pick<Lead, 'id'>>>(lostRes);
-
-  return {
-    totalLeads: allLeads.length,
-    deals: deals.length,
-    lost: lost.length,
-    totalRevenue: allLeads.reduce((sum, lead) => sum + Number(lead.value || 0), 0)
-  };
-}
-
-export async function getPipelineBreakdown() {
-  assertConfig();
-
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/leads?select=status`, {
-    cache: 'no-store',
-    headers: supabaseHeaders()
-  });
-
-  const rows = await handleResponse<Array<Pick<Lead, 'status'>>>(response);
-
-  return LEAD_STATUSES.map((status) => ({
-    status,
-    count: rows.filter((row) => row.status === status).length
-  }));
-}
-
-export async function getRecentLeads(limit = 5) {
-  assertConfig();
-
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/leads?select=*&order=created_at.desc&limit=${limit}`,
-    { cache: 'no-store', headers: supabaseHeaders() }
-  );
-
-  return handleResponse<Lead[]>(response);
-}
-
-export async function getLeads(options?: { search?: string; status?: string }) {
-  assertConfig();
-
-  const params = new URLSearchParams({
-    select: '*',
+export async function getAllLeads(options?: { search?: string; status?: string }) {
+  const query: Record<string, string> = {
+    select: 'id,name,phone,status,value,created_at',
     order: 'created_at.desc'
-  });
+  };
 
   if (options?.search) {
-    params.set('name', `ilike.*${options.search}*`);
+    query.name = `ilike.*${options.search}*`;
   }
 
   if (options?.status && LEAD_STATUSES.includes(options.status as LeadStatus)) {
-    params.set('status', `eq.${options.status}`);
+    query.status = `eq.${options.status}`;
   }
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/leads?${params.toString()}`, {
-    cache: 'no-store',
-    headers: supabaseHeaders()
-  });
-
-  return handleResponse<Lead[]>(response);
+  return supabaseAdminRequest<Lead[]>('/rest/v1/leads', {}, query);
 }
 
-export async function getLeadById(id: string) {
-  assertConfig();
-
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${id}&select=*&limit=1`, {
-    cache: 'no-store',
-    headers: supabaseHeaders()
+export async function getDashboardStats() {
+  const leads = await supabaseAdminRequest<Array<Pick<Lead, 'status' | 'value'>>>('/rest/v1/leads', {}, {
+    select: 'status,value'
   });
 
-  const data = await handleResponse<Lead[]>(response);
-  return data[0] || null;
+  const revenue = leads.reduce((sum, lead) => sum + Number(lead.value || 0), 0);
+  const deals = leads.filter((lead) => lead.status === 'deal').length;
+  const lost = leads.filter((lead) => lead.status === 'lost').length;
+
+  const pipeline = LEAD_STATUSES.map((status) => ({
+    status,
+    count: leads.filter((lead) => lead.status === status).length
+  }));
+
+  return {
+    totalLeads: leads.length,
+    deals,
+    lost,
+    revenue,
+    pipeline
+  };
 }
 
-export async function updateLead(id: string, payload: Partial<Pick<Lead, 'name' | 'phone' | 'email' | 'status' | 'value'>>) {
-  assertConfig();
-
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, {
-    method: 'PATCH',
-    cache: 'no-store',
-    headers: supabaseHeaders({ Prefer: 'return=representation' }),
-    body: JSON.stringify({
-      ...payload,
-      updated_at: new Date().toISOString()
-    })
+export async function getRecentLeads(limit = 5) {
+  return supabaseAdminRequest<Array<Pick<Lead, 'id' | 'name' | 'status'>>>('/rest/v1/leads', {}, {
+    select: 'id,name,status',
+    order: 'created_at.desc',
+    limit
   });
-
-  const data = await handleResponse<Lead[]>(response);
-  return data[0] || null;
 }
 
-export async function deleteLead(id: string) {
-  assertConfig();
+export async function updateLeadStatus(id: string, status: LeadStatus) {
+  return supabaseAdminRequest<Lead[]>(
+    '/rest/v1/leads',
+    {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ status })
+    },
+    { id: `eq.${id}` }
+  );
+}
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, {
-    method: 'DELETE',
-    cache: 'no-store',
-    headers: supabaseHeaders({ Prefer: 'return=minimal' })
-  });
-
-  await handleResponse<void>(response);
+export async function removeLead(id: string) {
+  await supabaseAdminRequest<void>(
+    '/rest/v1/leads',
+    {
+      method: 'DELETE',
+      headers: { Prefer: 'return=minimal' }
+    },
+    { id: `eq.${id}` }
+  );
 }

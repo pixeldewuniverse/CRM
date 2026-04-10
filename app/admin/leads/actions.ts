@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { deleteLead, LEAD_STATUSES, LeadStatus, updateLead } from '@/lib/leads';
+import { LEAD_STATUSES, LeadStatus, removeLead, updateLeadStatus } from '@/lib/leads';
 
 export async function updateLeadStatusAction(formData: FormData) {
   const id = String(formData.get('id') || '');
@@ -11,7 +11,7 @@ export async function updateLeadStatusAction(formData: FormData) {
     return;
   }
 
-  await updateLead(id, { status });
+  await updateLeadStatus(id, status);
   revalidatePath('/admin/dashboard');
   revalidatePath('/admin/leads');
 }
@@ -22,7 +22,7 @@ export async function deleteLeadAction(formData: FormData) {
     return;
   }
 
-  await deleteLead(id);
+  await removeLead(id);
   revalidatePath('/admin/dashboard');
   revalidatePath('/admin/leads');
 }
