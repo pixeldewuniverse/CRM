@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { LEAD_STATUSES, LeadStatus, removeLead, updateLeadStatus } from '@/lib/leads';
 
-export async function updateLeadStatusAction(formData: FormData) {
+export async function saveLeadDetailAction(formData: FormData)  {
   const id = String(formData.get('id') || '');
   const status = String(formData.get('status') || '') as LeadStatus;
 
