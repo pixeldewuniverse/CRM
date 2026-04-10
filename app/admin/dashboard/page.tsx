@@ -9,7 +9,7 @@ function currency(value: number) {
 export default async function AdminDashboardPage() {
   const [customers, recentLead] = await Promise.all([
     getAllCustomers(),
-    getCustomerById(5)
+    getCustomerById()
   ]);
 
   const totalLeads = customers.length;
