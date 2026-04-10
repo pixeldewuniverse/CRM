@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
-import { getDashboardStats, getRecentLeads } from '@/lib/leads';
+import { getDashboardStats, getRecentLeads } from '@/lib/customers';
 
 function currency(value: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
