@@ -3,25 +3,14 @@
 import { useTransition } from 'react';
 import { logoutAction } from '@/app/login/actions';
 
-type LogoutButtonProps = {
-  className?: string;
-};
-
-export function LogoutButton({ className }: LogoutButtonProps) {
+export function LogoutButton() {
   const [isPending, startTransition] = useTransition();
-
-  const handleLogout = () => {
-    startTransition(async () => {
-      await logoutAction();
-    });
-  };
 
   return (
     <button
-      type="button"
-      onClick={handleLogout}
+      onClick={() => startTransition(() => logoutAction())}
       disabled={isPending}
-      className={className ?? 'rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:opacity-60'}
+      className="w-full rounded-lg border px-3 py-2 text-left hover:bg-gray-100"
     >
       {isPending ? 'Logging out...' : 'Logout'}
     </button>
