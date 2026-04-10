@@ -12,6 +12,16 @@ const links = [
   { href: '/messages', label: 'Messages' }
 ];
 
+function LogoutButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button disabled={pending} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:opacity-60">
+      {pending ? 'Logging out...' : 'Logout'}
+    </button>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
