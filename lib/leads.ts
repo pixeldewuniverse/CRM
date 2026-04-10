@@ -2,6 +2,7 @@ import 'server-only';
 
 import { Lead, LEAD_STATUSES, LeadStatus, LeadUpdateInput } from '@/lib/leads-types';
 import { supabaseAdminRequest } from '@/lib/supabase/admin-client';
+import { createClient } from '@supabase/supabase-js';
 
 function assertLeadStatus(status: string): asserts status is LeadStatus {
   if (!LEAD_STATUSES.includes(status as LeadStatus)) {
@@ -114,6 +115,25 @@ export async function removeLead(id: string) {
     },
     { id: `eq.${id}` }
   );
+}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function getLeadById(id: string) {
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('GET LEAD ERROR:', error);
+    return null;
+  }
+
+  return data;
 }
 
 export { LEAD_STATUSES };
