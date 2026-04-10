@@ -12,12 +12,13 @@ function currency(value: number) {
 }
 
 export default async function AdminDashboardPage() {
-  const [{ totalLeads, deals, lost, revenue, pipeline }, recentCustomers] = await Promise.all([
-    getDashboardStats(),
-    getAllCustomers()
-  ]);
+  const [{ totalLeads, deals, lost, revenue, pipeline }, customers] =
+    await Promise.all([
+      getDashboardStats(),
+      getAllCustomers()
+    ]);
 
-const recentCustomers = customers.slice(0, 5);
+  const recentCustomers = customers.slice(0, 5);
   
 
   return (
