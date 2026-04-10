@@ -66,3 +66,24 @@ create policy "authenticated read/write customers" on public.customers for all t
 create policy "authenticated read/write deals" on public.deals for all to authenticated using (true) with check (true);
 create policy "authenticated read/write activities" on public.activities for all to authenticated using (true) with check (true);
 create policy "authenticated read/write messages" on public.messages for all to authenticated using (true) with check (true);
+
+create type lead_status as enum ('new', 'contacted', 'negotiation', 'deal', 'lost');
+
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  phone text not null,
+  tag text,
+  source text,
+  status lead_status not null default 'new',
+  value numeric(12,2) not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists leads_status_idx on public.leads(status);
+create index if not exists leads_created_at_idx on public.leads(created_at desc);
+
+alter table public.leads enable row level security;
+create policy "authenticated read/write leads" on public.leads for all to authenticated using (true) with check (true);
