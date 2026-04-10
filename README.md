@@ -1,81 +1,70 @@
-# CRM Phase 1 MVP (Next.js + Prisma + PostgreSQL)
+# Next.js + Supabase CRM
 
-Vercel-ready MVP CRM lead capture system using **Next.js App Router**, **Tailwind CSS**, and **PostgreSQL via Prisma**.
+A fullstack CRM web application built with **Next.js App Router**, **Tailwind CSS**, and **Supabase (PostgreSQL + Auth)**.
 
 ## Features
 
-- Landing page at `/`
-  - Captures URL attribution params: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `fbclid`, `gclid`
-  - Records `page_view` on load and stores `first_page_view_at`
-  - Lead form fields: name, phone/whatsapp, notes (optional)
-  - Submits to API and redirects to `/thank-you`
-- Thank-you page at `/thank-you`
-  - Benefit download placeholder link
-- Dashboard login placeholder at `/dashboard/login`
-- Dashboard at `/dashboard` (protected by cookie auth)
-  - Modern Kanban board by status (`new`, `contacted`, `qualified`, `won`, `lost`)
-  - Card move dropdown to update lead status
-  - Filters by segment, name/phone search, and campaign
-  - CSV exports: all, HOT, WARM, by status, and filtered
-- Segmentation rules
-  - HOT if notes contain `urgent` (case-insensitive)
-  - Else WARM
+- Email/password authentication (Supabase Auth)
+- Role support (`admin`, `staff`) via `profiles.role`
+- Dashboard metrics: total customers, total deals, revenue, recent activities
+- Customer module: create/list/detail (+ search & tag filter)
+- Sales pipeline: Kanban board with status updates
+- Activity tasks: call/follow-up/meeting, assign to user, due date
+- Communication log: WhatsApp/email simulation with history
+- Simple analytics chart for deal statuses
 
-## API Routes
-
-- `POST /api/lead` -> create lead
-- `PATCH /api/lead/:id` -> update status/segment
-- `PATCH /api/lead` (with `id`) -> update status/segment
-- `GET /api/export?segment=hot|warm&status=&utm_campaign=` -> CSV download
-- `POST /api/page-view` -> logs page_view event
-- `GET /api/health` -> quick deployment health check
-- `GET /api/auth/status` -> dashboard auth env readiness booleans
-
-## Data Model
-
-- Prisma schema: `prisma/schema.prisma`
-- Initial migration SQL: `prisma/migrations/20260217162000_init/migration.sql`
-
-## Local Development
+## Setup
 
 1. Install dependencies:
    ```bash
    npm install
    ```
-2. Create env file:
+2. Copy env:
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
-3. Set `DATABASE_URL` in `.env` to your PostgreSQL database.
-4. Set dashboard auth env vars:
-   - `DASHBOARD_PASSWORD`
-   - `DASHBOARD_SESSION_SECRET`
-5. Run migration:
-   ```bash
-   npx prisma migrate deploy
-   ```
-6. Generate Prisma client (if needed):
-   ```bash
-   npx prisma generate
-   ```
-7. Start dev server:
+3. Fill in Supabase keys from your project.
+   - Optional: set `NEXT_PUBLIC_WHATSAPP_NUMBER` (default `6281234567890`) for post-submit automation.
+   - Required for server lead API: `SUPABASE_SERVICE_ROLE_KEY` (server-only; never expose to browser).
+4. Run SQL from `supabase/schema.sql` in the Supabase SQL editor.
+5. Start app:
    ```bash
    npm run dev
    ```
 
-## Production / Vercel Deployment
+## Lead capture setup (Kado Bajo landing page)
 
-1. Push this repo to GitHub.
-2. In Vercel, import the GitHub repo.
-3. Set environment variable:
-   - `DATABASE_URL` = your production PostgreSQL connection string.
-4. Set build command (optional; default works with package scripts):
-   - `npm run build`
-5. Add post-deploy migration step in your workflow/CI (or run manually):
-   - `npx prisma migrate deploy`
-6. Every PR gets a Preview Deployment in Vercel automatically when connected to GitHub.
+The landing page submits `name`, `email`, and `phone` to `POST /api/customers`, which stores data in `customers`.
+
+Make sure your Supabase `customers` table includes:
+
+- `id` (uuid or serial primary key)
+- `name` (text)
+- `email` (text)
+- `phone` (text)
+- `source` (text, for value: `landing_page`)
+- `created_at` (timestamp with default `now()`)
+
+Example SQL if `email` is missing:
+
+```sql
+alter table public.customers
+add column if not exists email text;
+alter table public.customers
+add column if not exists source text;
+```
+
+## Project structure
+
+- `app/(auth)/login` — login UI
+- `app/(crm)` — protected CRM pages
+- `app/api/*` — route handlers for auth + CRUD actions
+- `components/crm/*` — reusable UI modules (sidebar, kanban, chart)
+- `lib/supabase/*` — browser/server/middleware clients
+- `supabase/schema.sql` — database schema + RLS policies
 
 ## Notes
 
-- No SQLite is used.
-- `npm run build` runs `next build`.
+- `Send WhatsApp` is mock logging for now (stored in `messages` table).
+- For production, tighten RLS by role/ownership instead of broad authenticated policies.
+- If you prefer stronger typed queries and cleaner error handling, you can switch lead ingestion from raw REST `fetch` to `@supabase/supabase-js` using server-only `SUPABASE_SERVICE_ROLE_KEY`.
