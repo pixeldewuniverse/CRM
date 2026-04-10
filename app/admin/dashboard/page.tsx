@@ -1,9 +1,13 @@
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
-import { getDashboardStats, getRecentLeads } from '@/lib/customers';
+import { getAllCustomers } from '@/lib/customers';
 
 function currency(value: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0
+  }).format(value);
 }
 
 export default async function AdminDashboardPage() {
@@ -14,6 +18,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* 🔥 STATS */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card><p className="text-sm text-slate-500">Total Customers</p><p className="mt-2 text-3xl font-semibold">{totalLeads}</p></Card>
         <Card><p className="text-sm text-slate-500">Deals</p><p className="mt-2 text-3xl font-semibold">{deals}</p></Card>
@@ -21,14 +26,21 @@ export default async function AdminDashboardPage() {
         <Card><p className="text-sm text-slate-500">Revenue</p><p className="mt-2 text-3xl font-semibold">{currency(revenue)}</p></Card>
       </section>
 
+      {/* 🔥 PIPELINE + RECENT */}
       <section className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <h2 className="text-base font-semibold text-slate-900">Pipeline Summary</h2>
+          <h2 className="text-base font-semibold text-slate-900">
+            Pipeline Summary
+          </h2>
+
           <ul className="mt-4 space-y-3">
             {pipeline.map((item) => (
-              <li key={item.status} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
+              <li
+                key={item.status}
+                className="flex items-center justify-between border px-3 py-2 rounded-xl"
+              >
                 <StatusBadge status={item.status} />
-                <span className="text-sm font-medium text-slate-700">{item.count}</span>
+                <span>{item.count}</span>
               </li>
             ))}
           </ul>
