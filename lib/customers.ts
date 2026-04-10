@@ -1,27 +1,29 @@
 import 'server-only';
 
 import { supabaseFetch } from '@/lib/supabase/server';
-import {
-  Customer,
-  CUSTOMER_STATUSES,
-  CustomerStatus,
-  Lead,
-  LEAD_STATUSES,
-  LeadStatus,
-  LeadUpdateInput,
-  UpdateCustomerInput
-} from '@/lib/customers-types';
+import { CUSTOMER_STATUSES, type Customer, type Lead, type LeadUpdateInput, type UpdateCustomerInput } from '@/lib/customers-types';
+import type { CustomerStatus } from '@/types/customer';
+
+type SupabaseCustomerRow = Omit<Customer, 'status'> & { status: string };
+
+export function isValidStatus(status: string): status is CustomerStatus {
+  return CUSTOMER_STATUSES.includes(status as CustomerStatus);
+}
 
 function assertCustomerStatus(status: string): asserts status is CustomerStatus {
-  if (!CUSTOMER_STATUSES.includes(status as CustomerStatus)) {
+  if (!isValidStatus(status)) {
     throw new Error(`Invalid customer status: ${status}`);
   }
 }
 
-function assertLeadStatus(status: string): asserts status is LeadStatus {
-  if (!LEAD_STATUSES.includes(status as LeadStatus)) {
-    throw new Error(`Invalid lead status: ${status}`);
-  }
+function mapCustomer(row: SupabaseCustomerRow): Customer {
+  const status = row.status ?? 'new';
+  assertCustomerStatus(status);
+
+  return {
+    ...row,
+    status
+  };
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -35,7 +37,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 // Customers
 export async function getAllCustomers(options?: { search?: string; status?: string }) {
   const params = new URLSearchParams({
-    select: 'id,name,email,phone,status,source,created_at',
+    select: 'id,name,email,phone,status,source,notes,tag,created_at,updated_at,value',
     order: 'created_at.desc'
   });
 
@@ -51,7 +53,8 @@ export async function getAllCustomers(options?: { search?: string; status?: stri
   }
 
   const response = await supabaseFetch(`/rest/v1/customers?${params.toString()}`);
-  return parseResponse<Customer[]>(response);
+  const rows = await parseResponse<SupabaseCustomerRow[]>(response);
+  return rows.map(mapCustomer);
 }
 
 export async function getCustomerById(id: string) {
@@ -60,8 +63,8 @@ export async function getCustomerById(id: string) {
   }
 
   const response = await supabaseFetch(`/rest/v1/customers?id=eq.${id}&select=*&limit=1`);
-  const data = await parseResponse<Customer[]>(response);
-  return data[0] || null;
+  const rows = await parseResponse<SupabaseCustomerRow[]>(response);
+  return rows[0] ? mapCustomer(rows[0]) : null;
 }
 
 export async function updateCustomer(id: string, data: UpdateCustomerInput) {
@@ -86,51 +89,45 @@ export async function updateCustomer(id: string, data: UpdateCustomerInput) {
     body: JSON.stringify(payload)
   });
 
-  const rows = await parseResponse<Customer[]>(response);
-  return rows[0] || null;
+  const rows = await parseResponse<SupabaseCustomerRow[]>(response);
+  return rows[0] ? mapCustomer(rows[0]) : null;
 }
 
-// Leads
+// Legacy compatibility aliases now backed by customers.
 export async function getAllLeads(options?: { search?: string; status?: string }) {
-  const params = new URLSearchParams({
-    select: 'id,name,phone,status,value,created_at',
-    order: 'created_at.desc'
-  });
-
-  if (options?.search?.trim()) {
-    params.set('name', `ilike.*${options.search.trim()}*`);
-  }
-
-  if (options?.status?.trim()) {
-    assertLeadStatus(options.status.trim());
-    params.set('status', `eq.${options.status.trim()}`);
-  }
-
-  const response = await supabaseFetch(`/rest/v1/leads?${params.toString()}`);
-  return parseResponse<Lead[]>(response);
+  return getAllCustomers(options);
 }
 
 export async function getDashboardStats() {
-  const response = await supabaseFetch('/rest/v1/leads?select=status,value');
-  const leads = await parseResponse<Array<Pick<Lead, 'status' | 'value'>>>(response);
+  const response = await supabaseFetch('/rest/v1/customers?select=status,value');
+  const rows = await parseResponse<Array<{ status: string; value?: number | null }>>(response);
+  const customers = rows.map((row) => {
+    const status = row.status as CustomerStatus;
+    if (!isValidStatus(status)) return { status: 'new' as CustomerStatus, value: Number(row.value || 0) };
+    return { status: row.status as CustomerStatus, value: Number(row.value || 0) };
+  });
 
-  const revenue = leads.reduce((sum, lead) => sum + Number(lead.value || 0), 0);
+  const revenue = customers.reduce((sum, customer) => sum + Number(customer.value || 0), 0);
 
   return {
-    totalLeads: leads.length,
-    deals: leads.filter((lead) => lead.status === 'deal').length,
-    lost: leads.filter((lead) => lead.status === 'lost').length,
+    totalLeads: customers.length,
+    deals: customers.filter((customer) => customer.status === 'deal').length,
+    lost: customers.filter((customer) => customer.status === 'lost').length,
     revenue,
-    pipeline: LEAD_STATUSES.map((status) => ({
+    pipeline: CUSTOMER_STATUSES.map((status) => ({
       status,
-      count: leads.filter((lead) => lead.status === status).length
+      count: customers.filter((customer) => customer.status === status).length
     }))
   };
 }
 
 export async function getRecentLeads(limit = 5) {
-  const response = await supabaseFetch(`/rest/v1/leads?select=id,name,status&order=created_at.desc&limit=${limit}`);
-  return parseResponse<Array<Pick<Lead, 'id' | 'name' | 'status'>>>(response);
+  const response = await supabaseFetch(`/rest/v1/customers?select=id,name,status&order=created_at.desc&limit=${limit}`);
+  const rows = await parseResponse<Array<{ id: string; name: string; status: string }>>(response);
+
+  return rows
+    .filter((row) => isValidStatus(row.status))
+    .map((row) => ({ ...row, status: row.status as CustomerStatus }));
 }
 
 export async function updateLead(id: string, data: Partial<LeadUpdateInput>) {
@@ -139,7 +136,7 @@ export async function updateLead(id: string, data: Partial<LeadUpdateInput>) {
   }
 
   if (data.status) {
-    assertLeadStatus(data.status);
+    assertCustomerStatus(data.status);
   }
 
   const payload: Partial<LeadUpdateInput> = {};
@@ -149,18 +146,18 @@ export async function updateLead(id: string, data: Partial<LeadUpdateInput>) {
   if (data.status !== undefined) payload.status = data.status;
   if (data.value !== undefined) payload.value = Number(data.value);
 
-  const response = await supabaseFetch(`/rest/v1/leads?id=eq.${id}`, {
+  const response = await supabaseFetch(`/rest/v1/customers?id=eq.${id}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=representation' },
     body: JSON.stringify(payload)
   });
 
-  const rows = await parseResponse<Lead[]>(response);
-  return rows[0] || null;
+  const rows = await parseResponse<SupabaseCustomerRow[]>(response);
+  return rows[0] ? mapCustomer(rows[0]) : null;
 }
 
-export async function updateLeadStatus(id: string, status: LeadStatus) {
-  assertLeadStatus(status);
+export async function updateLeadStatus(id: string, status: CustomerStatus) {
+  assertCustomerStatus(status);
   return updateLead(id, { status });
 }
 
@@ -169,7 +166,7 @@ export async function removeLead(id: string) {
     throw new Error('Lead id is required');
   }
 
-  const response = await supabaseFetch(`/rest/v1/leads?id=eq.${id}`, {
+  const response = await supabaseFetch(`/rest/v1/customers?id=eq.${id}`, {
     method: 'DELETE',
     headers: { Prefer: 'return=minimal' }
   });
@@ -180,5 +177,5 @@ export async function removeLead(id: string) {
   }
 }
 
-export { CUSTOMER_STATUSES, LEAD_STATUSES };
-export type { Customer, CustomerStatus, Lead, LeadStatus, LeadUpdateInput, UpdateCustomerInput };
+export { CUSTOMER_STATUSES };
+export type { Customer, CustomerStatus, Lead, LeadUpdateInput, UpdateCustomerInput };

@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useFormStatus } from 'react-dom';
+import { logoutAction } from '@/app/login/actions';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -10,6 +12,16 @@ const links = [
   { href: '/activities', label: 'Activities' },
   { href: '/messages', label: 'Messages' }
 ];
+
+function LogoutButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button disabled={pending} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:opacity-60">
+      {pending ? 'Logging out...' : 'Logout'}
+    </button>
+  );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -32,8 +44,8 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
-      <form action="/api/auth/logout" method="post" className="mt-6">
-        <button className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700">Logout</button>
+      <form action={logoutAction} className="mt-6">
+        <LogoutButton />
       </form>
     </aside>
   );
