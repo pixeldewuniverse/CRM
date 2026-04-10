@@ -1,9 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { LEAD_STATUSES, LeadStatus, removeLead, updateLeadStatus } from '@/lib/leads';
+import { removeLead, updateLeadStatus } from '@/lib/leads';
+import type { LeadStatus } from '@/lib/leads-types';
+import { LEAD_STATUSES } from '@/lib/leads-types';
 
-export async function updateLeadAction(formData: FormData) {
+export async function updateLeadStatusAction(formData: FormData) {
   const id = String(formData.get('id') || '');
   const status = String(formData.get('status') || '') as LeadStatus;
 

@@ -1,7 +1,8 @@
 import { StatusBadge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
-import { getAllLeads, LEAD_STATUSES } from '@/lib/leads';
+import { getAllLeads } from '@/lib/leads';
+import { LEAD_STATUSES } from '@/lib/leads-types';
 import { deleteLeadAction, updateLeadStatusAction } from './actions';
 
 function currency(value: number) {

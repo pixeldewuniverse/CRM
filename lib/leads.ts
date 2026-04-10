@@ -1,27 +1,7 @@
+import 'server-only';
+
+import { Lead, LEAD_STATUSES, LeadStatus, LeadUpdateInput } from '@/lib/leads-types';
 import { supabaseAdminRequest } from '@/lib/supabase/admin-client';
-
-export const LEAD_STATUSES = ['new', 'contacted', 'negotiation', 'deal', 'lost'] as const;
-export type LeadStatus = (typeof LEAD_STATUSES)[number];
-
-export type Lead = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  tag: string | null;
-  source: string | null;
-  status: LeadStatus;
-  value: number;
-  created_at: string;
-};
-
-export type LeadUpdateInput = {
-  name: string;
-  phone: string;
-  email: string;
-  status: LeadStatus;
-  value: number;
-};
 
 function assertLeadStatus(status: string): asserts status is LeadStatus {
   if (!LEAD_STATUSES.includes(status as LeadStatus)) {
@@ -135,3 +115,6 @@ export async function removeLead(id: string) {
     { id: `eq.${id}` }
   );
 }
+
+export { LEAD_STATUSES };
+export type { Lead, LeadStatus, LeadUpdateInput };

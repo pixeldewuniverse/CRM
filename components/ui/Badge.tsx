@@ -1,4 +1,4 @@
-import { LeadStatus } from '@/lib/leads';
+import type { LeadStatus } from '@/lib/leads-types';
 
 const styles: Record<LeadStatus, string> = {
   new: 'bg-slate-100 text-slate-700 border-slate-200',

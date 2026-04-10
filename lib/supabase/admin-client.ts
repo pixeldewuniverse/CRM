@@ -1,3 +1,5 @@
+import 'server-only';
+
 export type QueryParams = Record<string, string | number | undefined>;
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -1,7 +1,10 @@
 import { AdminSidebar } from '@/components/admin/Sidebar';
 import { AdminTopbar } from '@/components/admin/Topbar';
+import { requireSession } from '@/lib/auth';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireSession();
+
   return (
     <div className="min-h-screen bg-slate-50 md:flex">
       <AdminSidebar />
