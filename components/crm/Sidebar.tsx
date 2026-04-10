@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useFormStatus } from 'react-dom';
-import { logoutAction } from '@/app/login/actions';
+import { LogoutButton } from '@/components/crm/LogoutButton';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -44,9 +43,9 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
-      <form action={logoutAction} className="mt-6">
+      <div className="mt-6">
         <LogoutButton />
-      </form>
+      </div>
     </aside>
   );
 }
