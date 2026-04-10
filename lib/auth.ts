@@ -9,7 +9,7 @@ export async function requireSession() {
   if (!isAuthenticated) redirect('/login');
 
   return {
-    user: { email: 'admin@kadobajo.com' },
+    user: { id: 'admin', email: 'admin@kadobajo.com' },
     profile: null,
     supabaseFetch
   };

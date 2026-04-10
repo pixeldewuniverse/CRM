@@ -1,5 +1,7 @@
-import { requireSession } from '@/lib/auth';
 import { DealStatusChart } from '@/components/crm/DealStatusChart';
+import { requireSession } from '@/lib/auth';
+import { CUSTOMER_STATUSES } from '@/lib/customers-types';
+import type { CustomerStatus } from '@/types/customer';
 
 async function getTable(path: string, query: string) {
   const { supabaseFetch } = await requireSession();
@@ -8,26 +10,26 @@ async function getTable(path: string, query: string) {
 }
 
 export default async function DashboardPage() {
-  const { supabaseFetch } = await requireSession();
-
-  const [customers, deals, activities] = await Promise.all([
-    getTable('customers', 'select=id'),
-    getTable('deals', 'select=id,value,status'),
+  const [customers, activities] = await Promise.all([
+    getTable('customers', 'select=id,status,value'),
     getTable('activities', 'select=id,type,due_date,note&order=created_at.desc&limit=5')
   ]);
 
-  const revenue = deals.reduce((sum: number, row: any) => sum + Number(row.value || 0), 0);
-  const statusData = ['lead', 'prospect', 'deal', 'lost'].map((status) => ({
+  const revenue = customers.reduce((sum: number, row: { value?: number }) => sum + Number(row.value || 0), 0);
+  const statusData = CUSTOMER_STATUSES.map((status: CustomerStatus) => ({
     status,
-    count: deals.filter((row: any) => row.status === status).length
+    count: customers.filter((row: { status?: string }) => row.status === status).length
   }));
+  const deals = customers.filter((customer: { status?: string }) => customer.status === 'deal').length;
+  const lost = customers.filter((customer: { status?: string }) => customer.status === 'lost').length;
 
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold">Dashboard</h2>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="card"><p className="text-sm text-slate-500">Total Customers</p><p className="text-3xl font-bold">{customers.length}</p></div>
-        <div className="card"><p className="text-sm text-slate-500">Total Deals</p><p className="text-3xl font-bold">{deals.length}</p></div>
+        <div className="card"><p className="text-sm text-slate-500">Deals</p><p className="text-3xl font-bold">{deals}</p></div>
+        <div className="card"><p className="text-sm text-slate-500">Lost</p><p className="text-3xl font-bold">{lost}</p></div>
         <div className="card"><p className="text-sm text-slate-500">Revenue</p><p className="text-3xl font-bold">${revenue.toLocaleString()}</p></div>
       </div>
 
