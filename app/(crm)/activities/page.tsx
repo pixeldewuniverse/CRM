@@ -6,10 +6,6 @@ export default async function ActivitiesPage() {
   const activitiesRes = await supabaseFetch('/rest/v1/activities?select=*&order=due_date.asc');
   const customers = customersRes.ok ? await customersRes.json() : [];
   const activities = activitiesRes.ok ? await activitiesRes.json() : [];
-  const user = {
-  id: 'admin-1',
-  email: 'admin@kadobajo.com'
-  };
 
   return (
     <section className="space-y-4">
@@ -24,7 +20,6 @@ export default async function ActivitiesPage() {
         </select>
         <input name="note" className="rounded border px-3 py-2" placeholder="Task note" required />
         <input name="due_date" type="date" className="rounded border px-3 py-2" />
-        <input type="hidden" name="assigned_to" value={user.id} />
         <button className="rounded bg-slate-900 px-3 py-2 text-white">Create Task</button>
       </form>
       <div className="card overflow-auto">
