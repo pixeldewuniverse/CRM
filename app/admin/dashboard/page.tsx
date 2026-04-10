@@ -7,10 +7,12 @@ function currency(value: number) {
 }
 
 export default async function AdminDashboardPage() {
-  const [{ totalLeads, deals, lost, revenue, pipeline }, recentLeads] = await Promise.all([
+  const [customers, recentLead] = await Promise.all([
     getAllCustomers(),
     getCustomerById(5)
   ]);
+
+  const totalLeads = customers.length;
 
   return (
     <div className="space-y-6">
