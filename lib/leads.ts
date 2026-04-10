@@ -1,140 +1,42 @@
 import 'server-only';
 
-import { Lead, LEAD_STATUSES, LeadStatus, LeadUpdateInput } from '@/lib/leads-types';
-import { supabaseAdminRequest } from '@/lib/supabase/admin-client';
-import { createClient } from '@supabase/supabase-js';
+export type LeadRecord = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  tag: string | null;
+  source: string | null;
+  notes: string | null;
+  created_at: string;
+};
 
-function assertLeadStatus(status: string): asserts status is LeadStatus {
-  if (!LEAD_STATUSES.includes(status as LeadStatus)) {
-    throw new Error(`Invalid lead status: ${status}`);
-  }
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function assertLeadUpdateInput(data: Partial<LeadUpdateInput>) {
-  if (data.status) {
-    assertLeadStatus(data.status);
-  }
-
-  if (data.value !== undefined && Number.isNaN(Number(data.value))) {
-    throw new Error('Lead value must be a valid number');
-  }
-}
-
-export async function getAllLeads(options?: { search?: string; status?: string }) {
-  const query: Record<string, string> = {
-    select: 'id,name,phone,status,value,created_at',
-    order: 'created_at.desc'
-  };
-
-  if (options?.search?.trim()) {
-    query.name = `ilike.*${options.search.trim()}*`;
-  }
-
-  if (options?.status?.trim()) {
-    assertLeadStatus(options.status.trim());
-    query.status = `eq.${options.status.trim()}`;
-  }
-
-  return supabaseAdminRequest<Lead[]>('/rest/v1/leads', {}, query);
-}
-
-export async function getDashboardStats() {
-  const leads = await supabaseAdminRequest<Array<Pick<Lead, 'status' | 'value'>>>('/rest/v1/leads', {}, {
-    select: 'status,value'
-  });
-
-  const revenue = leads.reduce((sum, lead) => sum + Number(lead.value || 0), 0);
-
+function getHeaders() {
   return {
-    totalLeads: leads.length,
-    deals: leads.filter((lead) => lead.status === 'deal').length,
-    lost: leads.filter((lead) => lead.status === 'lost').length,
-    revenue,
-    pipeline: LEAD_STATUSES.map((status) => ({
-      status,
-      count: leads.filter((lead) => lead.status === status).length
-    }))
+    apikey: serviceRoleKey || '',
+    Authorization: `Bearer ${serviceRoleKey || ''}`,
+    'Content-Type': 'application/json'
   };
 }
 
-export async function getRecentLeads(limit = 5) {
-  return supabaseAdminRequest<Array<Pick<Lead, 'id' | 'name' | 'status'>>>('/rest/v1/leads', {}, {
-    select: 'id,name,status',
-    order: 'created_at.desc',
-    limit
-  });
-}
-
-export async function updateLead(id: string, data: Partial<LeadUpdateInput>) {
-  if (!id) {
-    throw new Error('Lead id is required');
+export async function getLeadById(id: string): Promise<LeadRecord | null> {
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase server configuration.');
   }
 
-  assertLeadUpdateInput(data);
-
-  const payload: Partial<LeadUpdateInput> = {};
-
-  if (data.name !== undefined) payload.name = data.name.trim();
-  if (data.phone !== undefined) payload.phone = data.phone.trim();
-  if (data.email !== undefined) payload.email = data.email.trim();
-  if (data.status !== undefined) payload.status = data.status;
-  if (data.value !== undefined) payload.value = Number(data.value);
-
-  if (Object.keys(payload).length === 0) {
-    throw new Error('No fields provided for update');
-  }
-
-  const updatedRows = await supabaseAdminRequest<Lead[]>(
-    '/rest/v1/leads',
-    {
-      method: 'PATCH',
-      headers: { Prefer: 'return=representation' },
-      body: JSON.stringify(payload)
-    },
-    { id: `eq.${id}` }
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/customers?id=eq.${encodeURIComponent(id)}&select=id,name,email,phone,tag,source,notes,created_at&limit=1`,
+    { method: 'GET', headers: getHeaders(), cache: 'no-store' }
   );
 
-  return updatedRows[0] ?? null;
-}
-
-export async function updateLeadStatus(id: string, status: LeadStatus) {
-  assertLeadStatus(status);
-  return updateLead(id, { status });
-}
-
-export async function removeLead(id: string) {
-  if (!id) {
-    throw new Error('Lead id is required');
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Failed to fetch lead: ${response.status} ${details}`);
   }
 
-  await supabaseAdminRequest<void>(
-    '/rest/v1/leads',
-    {
-      method: 'DELETE',
-      headers: { Prefer: 'return=minimal' }
-    },
-    { id: `eq.${id}` }
-  );
+  const rows = (await response.json()) as LeadRecord[];
+  return rows[0] || null;
 }
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-export async function getLeadById(id: string) {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    console.error('GET LEAD ERROR:', error);
-    return null;
-  }
-
-  return data;
-}
-
-export { LEAD_STATUSES };
-export type { Lead, LeadStatus, LeadUpdateInput };
