@@ -22,7 +22,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       </section>
 
       <Card>
-        <LeadDetailForm lead={lead} onSave={saveLeadDetailAction} />
+        <LeadDetailForm lead={lead} onSave={updateLeadAction} />
       </Card>
     </div>
   );
