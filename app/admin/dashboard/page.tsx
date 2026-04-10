@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { getAllCustomers } from '@/lib/customers';
+import { getDashboardStats } from '@/lib/customers';
 
 function currency(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -11,9 +12,13 @@ function currency(value: number) {
 }
 
 export default async function AdminDashboardPage() {
-  const [{ totalLeads, deals, lost, revenue, pipeline }, recentCustomers] = await Promise.all([
+  const [{ totalLeads, deals, lost, revenue, pipeline }, customers] =
+  await Promise.all([
     getDashboardStats(),
-    getRecentLeads(5)
+    getAllCustomers()
+  ]);
+
+const recentCustomers = customers.slice(0, 5);
   ]);
 
   return (
