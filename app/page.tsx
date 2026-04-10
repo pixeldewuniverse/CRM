@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { LeadCaptureForm } from '@/components/landing/LeadCaptureForm';
 import { ProductCard } from '@/components/landing/ProductCard';
 import { TestimonialCard } from '@/components/landing/TestimonialCard';
@@ -24,6 +25,16 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-emerald-50 text-slate-900">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:py-6">
+        <p className="text-sm font-semibold tracking-wide text-slate-700 md:text-base">Kado Bajo</p>
+        <Link
+          href="/login"
+          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Admin Login
+        </Link>
+      </header>
+
       <section
         className="relative overflow-hidden"
         style={{
