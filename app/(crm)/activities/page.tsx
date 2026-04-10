@@ -6,6 +6,10 @@ export default async function ActivitiesPage() {
   const activitiesRes = await supabaseFetch('/rest/v1/activities?select=*&order=due_date.asc');
   const customers = customersRes.ok ? await customersRes.json() : [];
   const activities = activitiesRes.ok ? await activitiesRes.json() : [];
+  const user = {
+  id: 'admin-1',
+  email: 'admin@kadobajo.com'
+  };
 
   return (
     <section className="space-y-4">
