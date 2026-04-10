@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 const ADMIN_EMAIL = 'admin@kadobajo.com';
 const ADMIN_PASSWORD = '123456';
@@ -27,4 +28,10 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
   });
 
   return { success: true };
+}
+
+export async function logoutAction() {
+  const store = await cookies();
+  store.delete('auth');
+  redirect('/login');
 }
