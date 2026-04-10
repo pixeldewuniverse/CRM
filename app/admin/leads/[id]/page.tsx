@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { LeadDetailForm } from '@/components/admin/LeadDetailForm';
 import { Card } from '@/components/ui/Card';
 import { getLeadById } from '@/lib/leads';
-import { saveLeadDetailAction } from './actions';
+import { updateLeadAction } from './actions';
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
