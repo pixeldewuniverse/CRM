@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function getAccessToken() {
   const store = await cookies();
@@ -23,15 +23,14 @@ export async function clearAccessToken() {
   store.delete('sb-access-token');
 }
 
-export async function supabaseFetch(path: string, init: RequestInit = {}, token?: string) {
-  const accessToken = token ?? (await getAccessToken());
-  return fetch(`${SUPABASE_URL}${path}`, {
-    ...init,
+export async function supabaseFetch(path: string, options: RequestInit = {}) {
+  return fetch(`${supabaseUrl}${path}`, {
+    ...options,
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
       'Content-Type': 'application/json',
-      ...(init.headers || {})
+      ...(options.headers || {})
     },
     cache: 'no-store'
   });

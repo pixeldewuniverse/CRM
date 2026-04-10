@@ -20,7 +20,6 @@ export default async function ActivitiesPage() {
         </select>
         <input name="note" className="rounded border px-3 py-2" placeholder="Task note" required />
         <input name="due_date" type="date" className="rounded border px-3 py-2" />
-        <input type="hidden" name="assigned_to" value={user.id} />
         <button className="rounded bg-slate-900 px-3 py-2 text-white">Create Task</button>
       </form>
       <div className="card overflow-auto">
