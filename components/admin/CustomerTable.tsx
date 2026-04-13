@@ -31,7 +31,7 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
               <td className="px-4 py-3 text-slate-600">{customer.email || '-'}</td>
               <td className="px-4 py-3 text-slate-600">{customer.phone || '-'}</td>
               <td className="px-4 py-3 text-slate-600">
-                <StatusDropdown id={customer.id} currentStatus={customer.status} />
+                <StatusDropdown id={customer.id} currentStatus={customer.status || 'new'} />
               </td>
               <td className="px-4 py-3 text-slate-600">{customer.source || '-'}</td>
               <td className="px-4 py-3 text-slate-600">{new Date(customer.created_at).toLocaleDateString()}</td>
