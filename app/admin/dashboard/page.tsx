@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
+import { StatusDropdown } from '@/components/crm/StatusDropdown';
 import { getAllCustomers } from '@/lib/customers';
 import { getDashboardStats } from '@/lib/customers';
 
@@ -60,7 +61,7 @@ export default async function AdminDashboardPage() {
               {recentCustomers.map((customer) => (
                 <li key={customer.id} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
                   <p className="font-medium text-slate-900">{customer.name}</p>
-                  <StatusBadge status={customer.status} />
+                  <StatusDropdown id={customer.id} currentStatus={customer.status} />
                 </li>
               ))}
             </ul>
