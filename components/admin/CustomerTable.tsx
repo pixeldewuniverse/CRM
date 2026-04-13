@@ -1,3 +1,4 @@
+import { StatusDropdown } from '@/components/crm/StatusDropdown';
 import Link from 'next/link';
 import type { Customer } from '@/lib/customers-types';
 
@@ -29,7 +30,9 @@ export function CustomerTable({ customers }: { customers: Customer[] }) {
               </td>
               <td className="px-4 py-3 text-slate-600">{customer.email || '-'}</td>
               <td className="px-4 py-3 text-slate-600">{customer.phone || '-'}</td>
-              <td className="px-4 py-3 text-slate-600 capitalize">{customer.status}</td>
+              <td className="px-4 py-3 text-slate-600">
+                <StatusDropdown id={customer.id} currentStatus={customer.status} />
+              </td>
               <td className="px-4 py-3 text-slate-600">{customer.source || '-'}</td>
               <td className="px-4 py-3 text-slate-600">{new Date(customer.created_at).toLocaleDateString()}</td>
             </tr>
