@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireSession } from '@/lib/auth';
+import { StatusDropdown } from '@/components/crm/StatusDropdown';
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string; tag?: string }> }) {
   const { supabaseFetch } = await requireSession();
@@ -33,13 +34,24 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
       <div className="card overflow-auto">
         <table className="w-full text-sm">
-          <thead><tr className="text-left text-slate-500"><th>Name</th><th>Phone</th><th>Email</th><th>Tag</th></tr></thead>
+          <thead>
+            <tr className="text-left text-slate-500">
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Tag</th>
+            </tr>
+          </thead>
           <tbody>
             {customers.map((customer: any) => (
               <tr key={customer.id} className="border-t">
                 <td className="py-2"><Link className="font-medium" href={`/customers/${customer.id}`}>{customer.name}</Link></td>
                 <td>{customer.phone}</td>
                 <td>{customer.email}</td>
+                <td>
+                  <StatusDropdown id={customer.id} currentStatus={customer.status || 'new'} />
+                </td>
                 <td>{customer.tag}</td>
               </tr>
             ))}
